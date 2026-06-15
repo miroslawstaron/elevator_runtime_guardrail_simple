@@ -6,31 +6,28 @@ on:
   pull_request:
     branches: [ main, develop ]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 1
 
-    - name: Build and test on Linux/macOS
-      if: runner.os != 'Windows'
-      run: |
-        make all
-        make test
+    - name: Build project
+      run: make all
 
-    - name: Build on Windows
-      if: runner.os == 'Windows'
-      run: |
-        gcc -Wall -Wextra -std=c99 -O2 -o elevator_guardrails src/main.c src/elevator.c src/guardrails.c -Iinclude -lm
-        gcc -Wall -Wextra -std=c99 -O2 -o test_simple src/elevator.c src/guardrails.c tests/test_simple.c -Iinclude -lm
-
-    - name: Run tests on Windows
-      if: runner.os == 'Windows'
-      run: .\test_simple.exe
+    - name: Run tests
+      run: make test
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4

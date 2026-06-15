@@ -1,5 +1,9 @@
-# Use Windows CMD shell on Windows systems
-SHELL = cmd.exe
+# Use platform-appropriate shell
+ifeq ($(OS),Windows_NT)
+  SHELL = cmd.exe
+else
+  SHELL = /bin/sh
+endif
 
 CC = gcc
 CFLAGS = -Wall -Wextra -std=c99 -g -Iinclude
@@ -34,7 +38,11 @@ all: $(MAIN_EXECUTABLE) $(SIMPLE_EXECUTABLE)
 
 # Create build directory
 $(BUILD_DIR):
+ifeq ($(OS),Windows_NT)
+	@if not exist $(BUILD_DIR) mkdir $(BUILD_DIR)
+else
 	@mkdir -p $(BUILD_DIR)
+endif
 
 # Compilation rules for source files
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
@@ -90,8 +98,15 @@ run: $(MAIN_EXECUTABLE)
 # Clean build artifacts
 clean:
 	@echo "Cleaning build artifacts..."
+ifeq ($(OS),Windows_NT)
+	@if exist $(BUILD_DIR) rmdir /s /q $(BUILD_DIR)
+	@if exist $(MAIN_EXECUTABLE) del $(MAIN_EXECUTABLE)
+	@if exist $(SIMPLE_EXECUTABLE) del $(SIMPLE_EXECUTABLE)
+	@if exist $(CUNIT_EXECUTABLE) del $(CUNIT_EXECUTABLE)
+else
 	rm -rf $(BUILD_DIR)
 	rm -f $(MAIN_EXECUTABLE) $(SIMPLE_EXECUTABLE) $(CUNIT_EXECUTABLE)
+endif
 	@echo "✓ Clean complete"
 
 # Check guardrails integrity (Windows compatible)
