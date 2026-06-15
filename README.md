@@ -88,6 +88,11 @@ gcc -Wall -Wextra -std=c99 -O2 -o elevator_sim main.c elevator.c guardrails.c
    - Prompts user every 20 seconds if still stopped
    - User can resume ('R') or wait ('W')
 
+4. **Floor bounds validation**
+   - Detects out-of-range `current_floor` / `target_floor` values
+   - Clamps values to safe limits (`FLOOR_0` to `FLOOR_9`)
+   - Prevents invalid state propagation after unexpected corruption
+
 **Design Decisions:**
 - Guardrails run after state machine update
 - Status structure allows caller to decide action

@@ -15,12 +15,23 @@
 #include <stdio.h>
 #include <string.h>
 
+static Floor clamp_floor_value(Floor floor) {
+    if ((int)floor < (int)FLOOR_0) {
+        return FLOOR_0;
+    }
+    if ((int)floor > (int)FLOOR_9) {
+        return FLOOR_9;
+    }
+    return floor;
+}
+
 /**
  * Check all guardrails and return their status
  * Guardrails are safety rules that the elevator must obey:
  * 1. Doors cannot be open while elevator is moving
  * 2. Stop button tracking - requires user prompt every 20 seconds
  * 3. Elevator cannot stop between floors
+ * 4. Elevator floors must stay in valid range [0, 9]
  * 
  * Returns a GuardrailStatus struct with violation flags and metadata
  */
@@ -55,6 +66,12 @@ GuardrailStatus guardrail_check(const Elevator *elev) {
     // This is unsafe because emergency stops should only happen at floor landings
     if (elev->state == EMERGENCY_STOP && elev->motion_ticks > 0) {
         status.between_floors_violation = true;  // Flag this safety violation
+    }
+
+    // GUARDRAIL 4: Check if floor values are outside valid range
+    if ((int)elev->current_floor < (int)FLOOR_0 || (int)elev->current_floor > (int)FLOOR_9 ||
+        (int)elev->target_floor < (int)FLOOR_0 || (int)elev->target_floor > (int)FLOOR_9) {
+        status.invalid_floor_violation = true;
     }
 
     return status;  // Return status with all violation flags set
@@ -103,6 +120,12 @@ void guardrail_enforce(Elevator *elev) {
             elev->state = MOVING_DOWN;  // Force state to moving downward
         }
     }
+
+    // ENFORCEMENT 3: Clamp invalid floor values to safe bounds
+    if (status.invalid_floor_violation) {
+        elev->current_floor = clamp_floor_value(elev->current_floor);
+        elev->target_floor = clamp_floor_value(elev->target_floor);
+    }
 }
 
 /**
@@ -124,6 +147,10 @@ const char* guardrail_violation_description(const GuardrailStatus *status) {
     // Check for between-floors violation and append description
     if (status->between_floors_violation) {
         strcat(buffer, "VIOLATION: Cannot stop between floors. Continuing to next floor.\n");
+    }
+
+    if (status->invalid_floor_violation) {
+        strcat(buffer, "VIOLATION: Floor out of range. Clamped to valid bounds.\n");
     }
 
     // Check if user prompt is needed (stop button active for 20 seconds)

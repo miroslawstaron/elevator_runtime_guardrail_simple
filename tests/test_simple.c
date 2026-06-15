@@ -172,6 +172,7 @@ int main(void) {
     ASSERT_FALSE(status.doors_open_violation);
     ASSERT_FALSE(status.between_floors_violation);
     ASSERT_FALSE(status.stop_button_pressed);
+    ASSERT_FALSE(status.invalid_floor_violation);
     TEST_END();
 
     TEST("Doors Open at Floor is Safe");
@@ -237,6 +238,22 @@ int main(void) {
     elev.state = IDLE;
     guardrail_enforce(&elev);
     ASSERT_EQUAL(elev.state, IDLE);
+    TEST_END();
+
+    TEST("Invalid Floor Violation");
+    elevator_init(&elev);
+    elev.current_floor = (Floor)11;
+    status = guardrail_check(&elev);
+    ASSERT_TRUE(status.invalid_floor_violation);
+    TEST_END();
+
+    TEST("Enforce Invalid Floor Violation");
+    elevator_init(&elev);
+    elev.current_floor = (Floor)-3;
+    elev.target_floor = (Floor)11;
+    guardrail_enforce(&elev);
+    ASSERT_EQUAL(elev.current_floor, FLOOR_0);
+    ASSERT_EQUAL(elev.target_floor, FLOOR_9);
     TEST_END();
 
     TEST("Violation Description No Violations");

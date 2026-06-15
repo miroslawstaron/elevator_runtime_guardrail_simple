@@ -137,6 +137,8 @@ void draw_status(const Elevator *elev, const GuardrailStatus *status) {
         printf("DOORS_OPEN_VIOLATION");  // Critical: doors open while moving
     } else if (status->between_floors_violation) {
         printf("BETWEEN_FLOORS_VIOLATION");  // Critical: stopped between floors
+    } else if (status->invalid_floor_violation) {
+        printf("INVALID_FLOOR_VIOLATION");
     } else if (status->stop_button_pressed) {
         // Stop button is active - show elapsed time and prompt flag
         printf("STOP_ACTIVE (%ds)", status->seconds_stopped);
@@ -170,6 +172,10 @@ void draw_warnings(const GuardrailStatus *status) {
         printf("\n*** WARNING: Cannot stop between floors. Moving to nearest floor.\n");
     }
 
+    if (status->invalid_floor_violation) {
+        printf("\n*** WARNING: Floor out of range detected. Clamped to safe bounds.\n");
+    }
+
     // User prompt: Every 20 seconds while stop button is active
     if (status->needs_user_prompt && status->stop_button_pressed) {
         printf("\n!!! STOP BUTTON ACTIVE (for %d seconds)\n", status->seconds_stopped);
@@ -196,6 +202,7 @@ void draw_help() {
     printf("| GUARDRAILS:                                         |\n");
     printf("|   - Never stops between floors                      |\n");
     printf("|   - Stops immediately if doors open while moving    |\n");
+    printf("|   - Clamps out-of-range floors to [0, 9]            |\n");
     printf("|   - Prompts every 20 seconds when stopped           |\n");
     printf("|                                                     |\n");
     printf("| Press any key to return to simulation...            |\n");
