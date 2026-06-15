@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Build and test on Linux/macOS
+      if: runner.os != 'Windows'
+      run: |
+        make all
+        make test
+
+    - name: Build on Windows
+      if: runner.os == 'Windows'
+      run: |
+        gcc -Wall -Wextra -std=c99 -O2 -o elevator_guardrails src/main.c src/elevator.c src/guardrails.c -Iinclude -lm
+        gcc -Wall -Wextra -std=c99 -O2 -o test_simple src/elevator.c src/guardrails.c tests/test_simple.c -Iinclude -lm
+
+    - name: Run tests on Windows
+      if: runner.os == 'Windows'
+      run: .\test_simple.exe
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: build-${{ matrix.os }}
+        path: |
+          elevator_guardrails
+          elevator_guardrails.exe
+          test_simple
+          test_simple.exe
