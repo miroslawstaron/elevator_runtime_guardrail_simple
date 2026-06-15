@@ -1,64 +1,82 @@
-CC = gcc
-CFLAGS = -Wall -Wextra -std=c99 -g
+# Use Windows CMD shell on Windows systems
+SHELL = cmd.exe
 
-# CUnit test files
-CUNIT_SOURCES = elevator.c guardrails.c test_elevator.c test_guardrails.c test_runner.c
-CUNIT_OBJECTS = $(CUNIT_SOURCES:.c=.o)
-CUNIT_EXECUTABLE = test_elevator_guardrails
+CC = gcc
+CFLAGS = -Wall -Wextra -std=c99 -g -Iinclude
+
+# Directories
+SRC_DIR = src
+TEST_DIR = tests
+INCLUDE_DIR = include
+BUILD_DIR = build
+BIN_DIR = .
+
+# Source files
+SRC_FILES = $(SRC_DIR)/elevator.c $(SRC_DIR)/guardrails.c
+SRC_OBJECTS = $(BUILD_DIR)/elevator.o $(BUILD_DIR)/guardrails.o
+
+# Main program
+MAIN_EXECUTABLE = $(BIN_DIR)/elevator_guardrails
+MAIN_OBJECTS = $(SRC_OBJECTS) $(BUILD_DIR)/main.o
+
+# Simple tests (no dependencies)
+SIMPLE_EXECUTABLE = $(BIN_DIR)/test_simple
+SIMPLE_OBJECTS = $(SRC_OBJECTS) $(BUILD_DIR)/test_simple.o
+
+# CUnit tests (optional)
+CUNIT_EXECUTABLE = $(BIN_DIR)/test_elevator_guardrails
+CUNIT_OBJECTS = $(SRC_OBJECTS) $(BUILD_DIR)/test_elevator.o $(BUILD_DIR)/test_guardrails.o $(BUILD_DIR)/test_runner.o
 CUNIT_LDFLAGS = -lm -lcunit
 
-# Simple test files (no external dependencies)
-SIMPLE_SOURCES = elevator.c guardrails.c test_simple.c
-SIMPLE_OBJECTS = $(patsubst %.c, test_build/%.o, $(SIMPLE_SOURCES))
-SIMPLE_EXECUTABLE = test_simple
-
-# Main program files (separate from tests)
-MAIN_SOURCES = elevator.c guardrails.c main.c
-MAIN_OBJECTS = $(MAIN_SOURCES:.c=.o)
-MAIN_EXECUTABLE = elevator_guardrails
-
-.PHONY: all test test-simple test-cunit run clean clean-tests help
+.PHONY: all test test-simple test-cunit run clean check-guardrails help
 
 all: $(MAIN_EXECUTABLE) $(SIMPLE_EXECUTABLE)
 
-# Build simple test executable (no external dependencies)
-test_build:
-	@mkdir -p test_build
+# Create build directory
+$(BUILD_DIR):
+	@mkdir -p $(BUILD_DIR)
 
-$(SIMPLE_OBJECTS): test_build/%.o : %.c | test_build
-	@echo "Compiling $< for simple tests..."
+# Compilation rules for source files
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
+	@echo "Compiling $<..."
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(SIMPLE_EXECUTABLE): $(SIMPLE_OBJECTS)
-	@echo "Linking simple test executable..."
-	$(CC) $(CFLAGS) -o $@ $^ -lm
-	@echo "Build complete: $@"
+# Compilation rules for test files
+$(BUILD_DIR)/%.o: $(TEST_DIR)/%.c | $(BUILD_DIR)
+	@echo "Compiling $<..."
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# Compilation rules for main
+$(BUILD_DIR)/main.o: $(SRC_DIR)/main.c | $(BUILD_DIR)
+	@echo "Compiling $<..."
+	$(CC) $(CFLAGS) -c $< -o $@
 
 # Build main executable
 $(MAIN_EXECUTABLE): $(MAIN_OBJECTS)
 	@echo "Linking main executable..."
 	$(CC) $(CFLAGS) -o $@ $^ -lm
-	@echo "Build complete: $@"
+	@echo "✓ Build complete: $@"
+
+# Build simple test executable (no dependencies)
+$(SIMPLE_EXECUTABLE): $(SIMPLE_OBJECTS)
+	@echo "Linking simple test executable..."
+	$(CC) $(CFLAGS) -o $@ $^ -lm
+	@echo "✓ Build complete: $@"
 
 # Build CUnit test executable (requires libcunit)
 $(CUNIT_EXECUTABLE): $(CUNIT_OBJECTS)
 	@echo "Linking CUnit test executable..."
 	$(CC) $(CFLAGS) -o $@ $^ $(CUNIT_LDFLAGS)
-	@echo "Build complete: $@"
-
-# Compile C files to object files (for main program)
-%.o: %.c
-	@echo "Compiling $<..."
-	$(CC) $(CFLAGS) -c $< -o $@
+	@echo "✓ Build complete: $@"
 
 # Run simple tests (no dependencies)
 test-simple: $(SIMPLE_EXECUTABLE)
-	@echo "Running simple tests (no external dependencies)..."
+	@echo "Running simple tests..."
 	./$(SIMPLE_EXECUTABLE)
 
 # Run CUnit tests (requires libcunit)
 test-cunit: $(CUNIT_EXECUTABLE)
-	@echo "Running CUnit tests (requires libcunit)..."
+	@echo "Running CUnit tests..."
 	./$(CUNIT_EXECUTABLE)
 
 # Run simple tests by default
@@ -66,28 +84,48 @@ test: test-simple
 
 # Run main program
 run: $(MAIN_EXECUTABLE)
+	@echo "Running main program..."
 	./$(MAIN_EXECUTABLE)
 
 # Clean build artifacts
-clean: clean-tests
+clean:
 	@echo "Cleaning build artifacts..."
-	rm -f $(MAIN_OBJECTS) $(MAIN_EXECUTABLE)
-	@echo "Clean complete"
+	rm -rf $(BUILD_DIR)
+	rm -f $(MAIN_EXECUTABLE) $(SIMPLE_EXECUTABLE) $(CUNIT_EXECUTABLE)
+	@echo "✓ Clean complete"
 
-clean-tests:
-	@echo "Cleaning test artifacts..."
-	rm -f $(CUNIT_OBJECTS) $(SIMPLE_OBJECTS) $(CUNIT_EXECUTABLE) $(SIMPLE_EXECUTABLE)
-	rm -rf test_build
-	@echo "Test clean complete"
+# Check guardrails integrity (Windows compatible)
+check-guardrails:
+	@echo Checking guardrails.c integrity...
+	@if not exist reference\reference_guardrails.c (echo ERROR: reference/reference_guardrails.c not found! && exit /b 1)
+	@if not exist $(SRC_DIR)\guardrails.c (echo ERROR: $(SRC_DIR)/guardrails.c not found! && exit /b 1)
+	@fc /b $(SRC_DIR)\guardrails.c reference\reference_guardrails.c >nul
+	@if errorlevel 1 (echo ERROR: guardrails.c and reference_guardrails.c are DIFFERENT! && echo. && echo File comparison using: && echo fc $(SRC_DIR)\guardrails.c reference\reference_guardrails.c && exit /b 1) else (echo guardrails.c matches reference_guardrails.c)
 
 # Help target
 help:
-	@echo "Available targets:"
-	@echo "  all          - Build main program and simple tests"
-	@echo "  test         - Build and run simple tests (no dependencies)"
-	@echo "  test-simple  - Build and run simple tests (no dependencies)"
-	@echo "  test-cunit   - Build and run CUnit tests (requires libcunit)"
-	@echo "  run          - Build and run main program"
-	@echo "  clean        - Remove all build artifacts"
-	@echo "  clean-tests  - Remove test artifacts only"
-	@echo "  help         - Display this help message"
+	@echo "=========================================="
+	@echo "  Elevator Control System - Build Targets"
+	@echo "=========================================="
+	@echo ""
+	@echo "Usage: make [target]"
+	@echo ""
+	@echo "Main Targets:"
+	@echo "  all              - Build main program and tests"
+	@echo "  test             - Build and run simple tests (default)"
+	@echo "  test-simple      - Build and run simple tests (no dependencies)"
+	@echo "  test-cunit       - Build and run CUnit tests (requires libcunit)"
+	@echo "  run              - Build and run main program"
+	@echo "  check-guardrails - Verify guardrails.c matches reference"
+	@echo "  clean            - Remove build artifacts"
+	@echo "  help             - Display this message"
+	@echo ""
+	@echo "Project Structure:"
+	@echo "  src/        - Source code (.c files)"
+	@echo "  include/    - Header files (.h files)"
+	@echo "  tests/      - Test files and test framework"
+	@echo "  docs/       - Documentation (.md files)"
+	@echo "  build/      - Build artifacts (generated)"
+	@echo "  scripts/    - Build and utility scripts"
+	@echo "  presentation/ - Presentation files"
+	@echo ""

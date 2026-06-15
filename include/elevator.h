@@ -1,3 +1,15 @@
+/****************************************
+*
+* Elevator Guardrails -- Elevator Interface
+*
+* Author: Miroslaw Staron
+* miroslaw.staron@gu.se
+*
+* SPDX-License-Identifier: MIT
+* (c) Miroslaw Staron, 2026
+*
+******************************************/
+
 #ifndef ELEVATOR_H
 #define ELEVATOR_H
 

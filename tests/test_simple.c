@@ -219,8 +219,8 @@ int main(void) {
     elev.state = MOVING_UP;
     elev.doors_open = true;
     guardrail_enforce(&elev);
-    // guardrail_enforce sets state to IDLE when doors open violation detected
-    ASSERT_EQUAL(elev.state, IDLE);
+    // guardrail_enforce transitions to SMOOTH_STOP_UP when doors open violation detected
+    ASSERT_EQUAL(elev.state, SMOOTH_STOP_UP);
     TEST_END();
 
     TEST("Enforce Doors Open Violation Moving Down");
@@ -228,8 +228,8 @@ int main(void) {
     elev.state = MOVING_DOWN;
     elev.doors_open = true;
     guardrail_enforce(&elev);
-    // guardrail_enforce sets state to IDLE when doors open violation detected
-    ASSERT_EQUAL(elev.state, IDLE);
+    // guardrail_enforce transitions to SMOOTH_STOP_DOWN when doors open violation detected
+    ASSERT_EQUAL(elev.state, SMOOTH_STOP_DOWN);
     TEST_END();
 
     TEST("Enforce No Violations");

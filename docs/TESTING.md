@@ -150,26 +150,39 @@ Alternative test suites using the CUnit framework (requires libcunit-dev):
 If CUnit is installed on your system:
 
 ```bash
-# Using CMake
+# Using Makefile (all platforms)
+make test-cunit
+
+# Or using CMake
 mkdir build && cd build
 cmake ..
 cmake --build .
 ctest --verbose
-
-# Using Make (if available)
-make test-cunit
 ```
 
-**CUnit Installation:**
+### Installing libcunit
 
-Ubuntu/Debian:
+**Windows (Automated):**
+```powershell
+cd scripts
+.\build-libcunit.ps1
+```
+See: [LIBCUNIT_INSTALL.md](LIBCUNIT_INSTALL.md) for detailed Windows installation guide.
+
+**Ubuntu/Debian:**
 ```bash
 sudo apt-get install libcunit1 libcunit1-dev
 ```
 
-macOS:
+**macOS:**
 ```bash
 brew install cunit
+```
+
+**WSL (Windows Subsystem for Linux):**
+```bash
+sudo apt update
+sudo apt install build-essential libcunit1 libcunit1-dev
 ```
 
 ## Test Design Principles

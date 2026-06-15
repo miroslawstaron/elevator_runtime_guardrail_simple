@@ -7,3 +7,7 @@
 /package.json
 /test_build
 /test_simple.exe
+presentation/
+scripts/
+build/
+include/guardrails.h
