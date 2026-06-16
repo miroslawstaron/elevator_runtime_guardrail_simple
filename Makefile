@@ -109,13 +109,19 @@ else
 endif
 	@echo "✓ Clean complete"
 
-# Check guardrails integrity (Windows compatible)
+# Check guardrails integrity
 check-guardrails:
-	@echo Checking guardrails.c integrity...
+	@echo "Checking guardrails.c integrity..."
+ifeq ($(OS),Windows_NT)
 	@if not exist reference\reference_guardrails.c (echo ERROR: reference/reference_guardrails.c not found! && exit /b 1)
 	@if not exist $(SRC_DIR)\guardrails.c (echo ERROR: $(SRC_DIR)/guardrails.c not found! && exit /b 1)
 	@fc /b $(SRC_DIR)\guardrails.c reference\reference_guardrails.c >nul
 	@if errorlevel 1 (echo ERROR: guardrails.c and reference_guardrails.c are DIFFERENT! && echo. && echo File comparison using: && echo fc $(SRC_DIR)\guardrails.c reference\reference_guardrails.c && exit /b 1) else (echo guardrails.c matches reference_guardrails.c)
+else
+	@if [ ! -f reference/reference_guardrails.c ]; then echo "ERROR: reference/reference_guardrails.c not found!"; exit 1; fi
+	@if [ ! -f $(SRC_DIR)/guardrails.c ]; then echo "ERROR: $(SRC_DIR)/guardrails.c not found!"; exit 1; fi
+	@if cmp -s $(SRC_DIR)/guardrails.c reference/reference_guardrails.c; then echo "guardrails.c matches reference_guardrails.c"; else echo "ERROR: guardrails.c and reference_guardrails.c are DIFFERENT!"; exit 1; fi
+endif
 
 # Help target
 help:

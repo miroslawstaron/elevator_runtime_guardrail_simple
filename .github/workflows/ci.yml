@@ -23,6 +23,9 @@ jobs:
       with:
         fetch-depth: 1
 
+    - name: Check guardrails integrity
+      run: make check-guardrails
+
     - name: Build project
       run: make all
 
