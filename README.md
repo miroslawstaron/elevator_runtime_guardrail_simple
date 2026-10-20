@@ -4,22 +4,32 @@ A comprehensive C implementation of an elevator control system featuring a state
 
 ## New: Elevator Lab web interface
 
-Operate the elevator from a responsive web dashboard using the supplied agenticAI logo. Add named passengers and groups on different floors, watch shared trips and intermediate stops, and use cabin, door, stop, and resume controls. **The entire backend remains C**, including the HTTP server, clock, passenger dispatch, original state machine, and original guardrails. The frontend is dependency-free HTML/CSS/JavaScript.
+Operate the elevator from a responsive Metriczone dashboard using the supplied logo and a deep teal measurement identity. Add named passengers and groups on different floors, watch shared trips and intermediate stops, and use cabin, door, stop, and resume controls. **The entire backend remains C**, including the HTTP server, clock, passenger dispatch, original state machine, and original guardrails. The frontend is dependency-free HTML/CSS/JavaScript.
 
 ```powershell
 .\run-web.ps1 -Port 8090 -OpenBrowser
 .\build.ps1 -Test -Terminal
 ```
 
-To share the C simulator over the internet, run `.\run-public.ps1`. It checks local port **8099**, starts the C backend and an HTTPS tunnel in the background, and prints the public URL. Keep this computer awake and online. Stop with `.\stop-public.ps1`; restarting assigns a new public URL. See [public access setup](docs/WEB_INTERFACE.md#share-over-the-internet) and [deployment diagrams](docs/evolution/03-public-access.md).
+For direct network access, open <http://lazythought.cse.chalmers.se:8099/>. The Windows launch scripts read `lab-network.json`, which saves the all-interface binding and allowed DNS hostname. Run `tools/enable-lab-firewall.ps1` in an administrator PowerShell to allow TCP 8099 on all network profiles, matching the 5G and SDV dashboards.
+
+To share the C simulator over the internet, run `.\run-public.ps1`. It checks local port **8099**, starts the C backend and an HTTPS tunnel in the background, and prints the public URL. Keep this computer awake and online. Stop with `.\stop-public.ps1`; restarting assigns a new public URL. Use `.\tools\restart-public-server.ps1` to restart only the C server with the saved network settings while keeping the current tunnel URL. See [public access setup](docs/WEB_INTERFACE.md#share-over-the-internet) and [deployment diagrams](docs/evolution/03-public-access.md).
 
 On Linux/macOS: `make web`, then `./elevator_web --port 8090`. Open <http://localhost:8090>. Read [web setup, API, and testing](docs/WEB_INTERFACE.md), [before diagrams](docs/evolution/01-before.md), [after diagrams](docs/evolution/02-after.md), or the [rendered diagram gallery](docs/evolution/diagrams.html).
 
 ## Overview
 
+Use **Usage scenarios** to run a 300-person busy morning or afternoon, occasional travellers, VIP traffic, or custom timed arrival streams. Configure counts, timing, routes and priorities; use up to 20× playback and retain each experiment's telemetry. In **Telemetry & experiments**, **Analyze telemetry & suggest improvements** produces an evidence-based steering report for the selected run. See [scenario instructions and API examples](docs/SCENARIOS.md) and [stage 10 architecture and sequences](docs/evolution/10-traffic-scenarios-and-analysis.md).
+
+The C backend now includes [embedded telemetry and passenger feedback](docs/TELEMETRY.md). It records elevator samples at 10 Hz, durable events, passenger journey timings, and textual feedback with optional ratings in `data/elevator.sqlite3`. The web **Telemetry & experiments** section provides named runs, historical queries, filters, pagination, JSON/CSV exports, and feedback forms for live or archived passengers. History survives resets and restarts; no separate database service is needed. See the [telemetry architecture and sequences](docs/evolution/04-telemetry.md).
+
+Open **System evolution** in the web sidebar to trace every implementation stage through architecture and sequence diagrams, enlarge/zoom drawings, and download SVG or editable Mermaid sources. The ordered [stage registry](docs/evolution/stages.json) drives both the web timeline and offline gallery. Each future meaningful change must append a new documented stage, regenerate the assets, and pass `node tools/check-evolution.mjs`; the standing workflow is recorded in [AGENTS.md](AGENTS.md).
+
 This project demonstrates solid software engineering principles by separating concerns into independent modules:
 
-### Architecture
+### Terminal baseline architecture
+
+This original terminal layout is preserved for reference. Current architecture and interaction sequences are available in the web **System evolution** timeline and [diagram gallery](docs/evolution/diagrams.html).
 
 ```
 ┌─────────────────────────────────────────────┐

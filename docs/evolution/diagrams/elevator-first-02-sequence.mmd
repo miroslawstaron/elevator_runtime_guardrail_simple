@@ -1,0 +1,22 @@
+sequenceDiagram
+    actor Operator
+    participant UI as Elevator-first interface
+    participant C as Existing C runtime
+    participant DB as Existing telemetry database
+    participant Analysis as Existing recommendation rules
+    participant Development as Implementation and verification
+    participant Evolution as Stage catalog and diagrams
+    Operator->>UI: Open simulator and inspect elevator state
+    UI->>C: Read state and send cabin controls
+    C-->>UI: Live floor, cabin, passenger and safety state
+    Operator->>UI: Configure and run a traffic scenario
+    UI->>C: Submit the validated scenario configuration
+    C->>DB: Record simulation samples and journeys
+    Operator->>UI: Select the run before requesting analysis
+    UI->>DB: Read whole-run metrics through the existing API
+    DB-->>Analysis: Recorded measurements
+    Analysis-->>UI: Candidate steering changes with evidence
+    Operator->>Development: Select, implement and test a candidate separately
+    Development->>Evolution: Append the verified implementation stage
+    Evolution-->>UI: Architecture, sequences and downloadable sources
+    Note over UI,Development: The interface explains the workflow without changing algorithm code automatically.

@@ -1,0 +1,23 @@
+sequenceDiagram
+    actor User
+    participant Browser as Dashboard and live sequence
+    participant Server as C HTTP server
+    participant Sim as C simulation
+    participant DB as Embedded SQLite
+    User->>Server: Add passengers or operate cabin controls
+    Server->>Sim: Apply validated command
+    loop Every simulation tick
+        Sim->>Sim: Advance elevator and passenger journeys
+        Sim->>DB: Record samples, journey changes and events
+        Browser->>Server: Poll existing state endpoint
+        Server-->>Browser: Current run, cabin state and recent timestamped events
+        Browser->>Browser: Draw chronological interactions and current progress
+    end
+    User->>Browser: Pause diagram or download SVG
+    Note over Browser,Sim: Pausing the view leaves the simulation running.
+    User->>Server: Start a new experiment
+    Server->>Sim: Reset into a new run
+    Server-->>Browser: New run ID and fresh event sequence
+    Browser->>Browser: Replace the previous run's live diagram
+    User->>Browser: Open architecture and sequence history
+    Browser->>Server: Read generated stage catalog and selected diagrams

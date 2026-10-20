@@ -1,0 +1,42 @@
+flowchart TB
+    subgraph Entry[Application entry points]
+        HTTP["src/web_server.c<br/>HTTP routes, request validation and clock"]
+        Main["src/main.c<br/>Original terminal application"]
+    end
+    subgraph Dispatch[Passenger simulation module]
+        SimC["src/simulation.c<br/>Dispatch, scenario scheduling, VIP and aging policy"]
+        SimH["include/simulation.h<br/>Simulation, Passenger, ScenarioConfig and API"]
+        SimC -->|includes| SimH
+    end
+    subgraph Telemetry[Telemetry module]
+        StoreC["src/telemetry.c<br/>Recording, feedback, SQL queries and analysis metrics"]
+        StoreH["include/telemetry.h<br/>Opaque Telemetry handle and query API"]
+        StoreC -->|includes| StoreH
+    end
+    subgraph Core[Elevator module]
+        ElevatorC["src/elevator.c<br/>State-machine implementation"]
+        ElevatorH["include/elevator.h<br/>Elevator, Floor, ElevatorState and API"]
+        ElevatorC -->|includes| ElevatorH
+    end
+    subgraph Safety[Guardrail module]
+        GuardC["src/guardrails.c<br/>Safety checks and enforcement"]
+        GuardH["include/guardrails.h<br/>GuardrailStatus and API"]
+        GuardC -->|includes| GuardH
+    end
+    subgraph Vendor[Embedded database library]
+        SQLiteC["vendor/sqlite/sqlite3.c"]
+        SQLiteH["vendor/sqlite/sqlite3.h"]
+        DB[("data/elevator.sqlite3")]
+        SQLiteC -->|includes| SQLiteH
+        SQLiteC -.->|database file I/O| DB
+    end
+    HTTP -->|includes| SimH
+    HTTP -->|includes| StoreH
+    StoreH -->|includes| SimH
+    SimH -->|includes| ElevatorH
+    SimH -->|includes| GuardH
+    GuardH -->|includes| ElevatorH
+    Main -->|includes| ElevatorH
+    Main -->|includes| GuardH
+    StoreC -->|includes| SQLiteH
+    StoreC -.->|linked library implementation| SQLiteC

@@ -1,3 +1,11 @@
+/****************************************
+*
+* Elevator Lab -- Simulator Browser Verification
+*
+* SPDX-License-Identifier: MIT
+*
+******************************************/
+
 // Optional browser QA: npm install --prefix build/browser-tools playwright --no-save
 // EDGE_PATH can override the installed browser. No browser dependency is needed to run the app.
 import assert from 'node:assert/strict';
@@ -9,11 +17,12 @@ const require = createRequire(import.meta.url);
 const {chromium} = require('../build/browser-tools/node_modules/playwright');
 const root = fileURLToPath(new URL('../', import.meta.url));
 const port = 18090;
-const server = spawn(path.join(root, 'build', process.platform === 'win32' ? 'elevator_web.exe' : 'elevator_web'), ['--port', String(port), '--web-root', path.join(root, 'web')], {windowsHide:true});
+const server = spawn(process.argv[2] || path.join(root, 'build', process.platform === 'win32' ? 'elevator_web.exe' : 'elevator_web'), ['--port', String(port), '--database', ':memory:', '--web-root', path.join(root, 'web')], {windowsHide:true});
 let startup = '';
 server.stdout.on('data', data => { startup += data; });
 server.stderr.on('data', data => { startup += data; });
 let browser;
+// BROWSER SETUP: Start an isolated in-memory C service and connect a real browser
 try {
   for (let i = 0; i < 60 && !startup.includes('Open http://'); i++) await new Promise(resolve => setTimeout(resolve, 50));
   assert.match(startup, /Open http:\/\//);
@@ -27,6 +36,7 @@ try {
   assert.equal(await page.locator('.floor-row').count(), 10);
   assert.equal(await page.locator('.floor-button').count(), 10);
   assert.ok(await page.locator('.brand img').evaluate(image => image.complete && image.naturalWidth > 0));
+  // SCENARIO 1: Reject an invalid journey before adding passengers
   await page.locator('#to-floor').selectOption('1');
   await page.locator('#add-button').click();
   assert.match(await page.locator('#form-error').textContent(), /different/);
@@ -53,6 +63,7 @@ try {
   await page.locator('#demo-button').click();
   await page.waitForFunction(() => document.querySelector('#people-total').textContent === '6');
   await page.screenshot({path:path.join(root,'build/desktop-demo.png'),fullPage:true});
+  // SCENARIO 2: A phone browser sees the same shared simulation without page overflow
   const context = await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
   const mobile = await context.newPage();
   await mobile.goto(`http://localhost:${port}`);
@@ -64,6 +75,7 @@ try {
   await page.waitForFunction(() => document.querySelector('#people-total').textContent === '0');
   // A second browser sees the same C state; stopping the service disables stale controls.
   await mobile.waitForFunction(() => document.querySelector('#people-total').textContent === '0');
+  // SCENARIO 3: Disconnect the service and verify stale operating controls are disabled
   server.kill();
   await page.waitForFunction(() => document.querySelector('#connection').classList.contains('offline'), null, {timeout:10000});
   assert.ok(await page.locator('#stop-button').isDisabled());
@@ -71,6 +83,7 @@ try {
   // Expected network errors only after the intentional disconnect.
   assert.deepEqual(errors.filter(error => !/ERR_CONNECTION|Failed to fetch|Failed to load resource/.test(error)), []);
   console.log('PASS: real Edge desktop/phone UI, logo, form validation, escaped names, boarding/travel/arrival, moving interlocks, stop/resume, filters, demo, shared state, reset, offline controls, no horizontal overflow');
+// CLEANUP: Terminate test resources whether the browser assertions succeed or fail
 } finally {
   server.kill();
   if (browser) await browser.close();

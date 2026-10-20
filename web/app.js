@@ -1,8 +1,29 @@
+/****************************************
+*
+* Elevator Lab -- Browser Controls and Authoritative State Rendering
+*
+* SPDX-License-Identifier: MIT
+*
+******************************************/
+
 'use strict';
 
+/**
+ * Look up an element by its stable dashboard ID
+ */
 const $ = id => document.getElementById(id);
+/**
+ * Escape user text before including it in generated HTML
+ * Passenger names must render as text rather than executable markup
+ */
 const escapeHtml = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[c]));
+/**
+ * Return the display label for a numbered floor, including the lobby
+ */
 const floorName = floor => floor === 0 ? '0 · Lobby' : `Floor ${floor}`;
+/**
+ * Convert 100 ms simulation ticks into the displayed minutes and seconds
+ */
 const clock = ticks => { const seconds = Math.floor(ticks / 10); return `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`; };
 const personSvg = '<svg viewBox="0 0 20 32" aria-hidden="true"><circle cx="10" cy="5" r="3" fill="currentColor"/><path d="M6 11 Q10 8 14 11 L16 20 M6 11 L4 20 M7 12 L7 21 L6 30 M13 12 L13 21 L14 30" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/></svg>';
 let state = null;
@@ -18,6 +39,7 @@ let positioned = false;
 let nameIndex = 0;
 const names = ['Alex', 'Sam', 'Jamie', 'Robin', 'Morgan', 'Casey', 'Taylor', 'Jordan'];
 
+// INITIALIZATION 1: Build the visible floor rows in descending building order
 for (let floor = 9; floor >= 0; floor--) {
   const row = document.createElement('div');
   row.className = 'floor-row';
@@ -25,6 +47,7 @@ for (let floor = 9; floor >= 0; floor--) {
   row.innerHTML = `<div class="floor-number">${String(floor).padStart(2, '0')}<small>${floor === 0 ? 'LOBBY' : 'FLOOR'}</small></div><div class="floor-waiting" id="waiting-${floor}"><span class="floor-empty">No one waiting</span></div><button class="floor-call" data-floor="${floor}" aria-label="Call elevator to ${floorName(floor)}" title="Call elevator to ${floorName(floor)}">+</button>`;
   $('floors').append(row);
 }
+// INITIALIZATION 2: Build floor selectors and manual cabin request buttons
 for (let floor = 0; floor < 10; floor++) {
   $('from-floor').add(new Option(floorName(floor), String(floor)));
   $('to-floor').add(new Option(floorName(floor), String(floor)));
@@ -39,6 +62,9 @@ for (let floor = 0; floor < 10; floor++) {
 $('from-floor').value = '1';
 $('to-floor').value = '7';
 
+/**
+ * Display a temporary status message and replace any older notification timer
+ */
 function notify(message) {
   $('toast').textContent = message;
   $('toast').hidden = false;
@@ -46,6 +72,10 @@ function notify(message) {
   toastTimer = setTimeout(() => { $('toast').hidden = true; }, 4000);
 }
 
+/**
+ * Publish runtime connection status and refresh which controls are available
+ * Disconnected controls must not imply that commands can still reach the C server
+ */
 function setConnection(value) {
   connected = value;
   $('connection').classList.toggle('offline', !value);
@@ -58,15 +88,25 @@ function setConnection(value) {
   }
 }
 
+/**
+ * Combine connection, busy and availability flags before enabling controls
+ * Read-only local diagram controls can remain usable while the runtime is disconnected
+ * Apply cabin state interlocks and the live passenger limit when connected
+ */
 function updateControls() {
-  document.querySelectorAll('button').forEach(button => { button.disabled = !connected; });
+  document.querySelectorAll('button').forEach(button => { button.disabled = (!connected && button.dataset.localControl !== 'true') || button.dataset.busy === 'true' || button.dataset.unavailable === 'true'; });
   if (!state || !connected) return;
-  $('add-button').disabled = submitting || state.people.length >= 160;
-  $('demo-button').disabled = state.people.length + 6 > 160;
+  $('add-button').disabled = submitting || state.people.length >= state.maxPeople;
+  $('demo-button').disabled = state.people.length + 6 > state.maxPeople;
   $('open-button').disabled = state.state !== 'IDLE' || state.stopped || state.stopPending;
   $('close-button').disabled = !['DOORS_OPEN', 'DOORS_OPENING'].includes(state.state) || state.stopped || state.stopPending;
 }
 
+/**
+ * Read or mutate the C simulation through a bounded request
+ * Only apply replies at least as new as the last applied request ID
+ * Return the parsed state or throw an error after updating connection status
+ */
 async function api(path, values) {
   const id = ++requestId;
   const controller = new AbortController();
@@ -76,6 +116,7 @@ async function api(path, values) {
     response = await fetch(path, values ? { method: 'POST', body: new URLSearchParams(values), headers: {'Content-Type': 'application/x-www-form-urlencoded'}, signal: controller.signal } : { signal: controller.signal });
     const result = await response.json();
     if (!response.ok) throw new Error(result.error || 'The request could not be completed.');
+    // RESPONSE ORDER: A slower older response must not overwrite a newer accepted snapshot
     if (id >= appliedRequest) {
       appliedRequest = id;
       state = result;
@@ -89,17 +130,22 @@ async function api(path, values) {
   } finally { clearTimeout(timer); }
 }
 
+/**
+ * Serialize cabin commands so rapid clicks preserve their intended order
+ * Report command failures without preventing later commands from running
+ */
 function control(action, extra = {}) {
   commandChain = commandChain.catch(() => {}).then(async () => {
     try {
       await api('/api/control', {action, ...extra});
-      if (action === 'demo') notify('Six people, six journeys. Watch the building come to life.');
-      if (action === 'reset') notify('A fresh start. All journeys have been cleared.');
+      if (action === 'demo') notify('Added six demo passengers.');
+      if (action === 'reset') notify('Simulation reset. Previous telemetry and feedback are saved.');
     } catch (error) { notify(error.message); }
   });
   return commandChain;
 }
 
+// COMMAND INPUT: Delegate floor and cabin actions through the serialized command queue
 document.addEventListener('click', event => {
   const button = event.target.closest('button');
   if (!button || button.disabled) return;
@@ -109,6 +155,7 @@ document.addEventListener('click', event => {
 $('demo-button').addEventListener('click', () => control('demo'));
 $('reset-button').addEventListener('click', () => control('reset'));
 $('journey-filter').addEventListener('change', () => { tableKey = ''; renderJourneys(); });
+// PASSENGER INPUT: Validate name bytes and route before queuing an atomic group insertion
 $('passenger-form').addEventListener('submit', event => {
   event.preventDefault();
   if (!connected || submitting) return;
@@ -136,6 +183,11 @@ $('passenger-form').addEventListener('submit', event => {
   });
 });
 
+/**
+ * Render the most recently accepted authoritative state
+ * Update cabin animation, counts, safety status and changed event/journey content
+ * Publish one elevator-state event for the telemetry and live sequence components
+ */
 function render() {
   const waiting = state.people.filter(p => p.status === 'waiting');
   $('waiting-count').textContent = String(waiting.length);
@@ -176,9 +228,10 @@ function render() {
     button.classList.toggle('current', state.floor === floor);
     button.setAttribute('aria-pressed', String(state.requests[floor]));
   });
+  // SAFETY DISPLAY: Present C guardrail and stop metadata instead of inferring safety in the browser
   const violation = state.guardrails.doors || state.guardrails.betweenFloors || state.guardrails.invalidFloor;
   $('guard-status').textContent = violation ? 'Guardrail correction active' : 'All runtime guardrails active';
-  $('guard-dot').style.backgroundColor = violation ? '#bf6556' : '#65875d';
+  $('guard-dot').style.backgroundColor = violation ? '#bf6556' : '#5d8087';
   $('door-status').textContent = state.doorsOpen ? 'Doors open' : 'Doors closed';
   $('stop-notice').hidden = !state.stopped && !state.stopPending;
   $('stop-title').textContent = state.stopPending ? 'Securing the cabin' : 'Emergency stop active';
@@ -186,32 +239,47 @@ function render() {
   $('stop-button').textContent = state.stopped || state.stopPending ? '↻ Resume elevator' : '▣ Emergency stop';
   $('stop-button').dataset.action = state.stopped || state.stopPending ? 'resume' : 'stop';
   renderJourneys();
+  // LIVE ACTIVITY: Rebuild recent messages only when their identity or content changes
   const newEventKey = JSON.stringify(state.events.map(e => [e.id, e.message]));
   if (newEventKey !== eventKey) {
     eventKey = newEventKey;
     $('event-list').innerHTML = [...state.events].reverse().slice(0, 20).map(e => `<li>${escapeHtml(e.message)}<time class="mono">${clock(e.tick)}</time></li>`).join('');
   }
   updateControls();
+  window.dispatchEvent(new CustomEvent('elevator-state', {detail:state}));
 }
 
+/**
+ * Render the selected journey status with escaped passenger names
+ * Use a content key to avoid rebuilding rows on every 100 ms snapshot
+ * Keep each feedback button tied to both its passenger and experiment identity
+ */
 function renderJourneys() {
   if (!state) return;
   const filter = $('journey-filter').value;
-  const people = state.people.filter(p => filter === 'all' || p.status === filter).slice().reverse();
-  const newTableKey = JSON.stringify([filter, people.map(p => [p.id, p.name, p.from, p.to, p.status, Math.floor(((p.status === 'waiting' ? state.tick : p.boardedTick) - p.addedTick) / 10)])]);
+  const matching = state.people.filter(p => filter === 'all' || p.status === filter);
+  // DISPLAY BOUND: Keep 100 rows responsive; the paged telemetry explorer retains every journey.
+  const people = matching.slice().reverse().slice(0,100);
+  const newTableKey = JSON.stringify([state.runId, filter, people.map(p => [p.id, p.name, p.from, p.to, p.status, Math.floor(((p.status === 'waiting' ? state.tick : p.boardedTick) - p.addedTick) / 10)])]);
   if (newTableKey === tableKey) return;
   tableKey = newTableKey;
   $('passenger-rows').innerHTML = people.map(p => {
     const wait = Math.max(0, ((p.status === 'waiting' ? state.tick : p.boardedTick) - p.addedTick) / 10);
-    return `<tr><td><div class="passenger-cell"><span class="avatar person-color-${p.id % 5}">${escapeHtml(p.name[0].toUpperCase())}</span>${escapeHtml(p.name)}</div></td><td>${p.from === 0 ? 'Lobby' : `F${p.from}`}<span class="journey-arrow">→</span>${p.to === 0 ? 'Lobby' : `F${p.to}`}</td><td><span class="journey-status ${p.status}">${{waiting:'Waiting', riding:'On board', arrived:'Arrived'}[p.status]}</span></td><td>${Math.floor(wait)}s</td></tr>`;
+    return `<tr><td><div class="passenger-cell"><span class="avatar person-color-${p.id % 5}">${escapeHtml(p.name[0].toUpperCase())}</span>${escapeHtml(p.name)}${p.vip ? ' · VIP' : ''}</div></td><td>${p.from === 0 ? 'Lobby' : `F${p.from}`}<span class="journey-arrow">→</span>${p.to === 0 ? 'Lobby' : `F${p.to}`}</td><td><span class="journey-status ${p.status}">${{waiting:'Waiting', riding:'On board', arrived:'Arrived',scheduled:'Scheduled',cancelled:'Cancelled'}[p.status]}</span></td><td>${['scheduled','cancelled'].includes(p.status) ? '—' : `${Math.floor(wait)}s`}</td><td><button type="button" class="feedback-button" data-feedback-id="${p.id}" data-feedback-run="${state.runId}" data-feedback-name="${escapeHtml(p.name)}">Feedback ↗</button></td></tr>`;
   }).join('');
   $('empty-state').hidden = people.length > 0;
-  $('empty-state').querySelector('h3').textContent = state.people.length ? 'No journeys in this view.' : 'A building full of possibilities.';
-  $('empty-state').querySelector('p').textContent = state.people.length ? 'Choose another status to see more passengers.' : 'Add your first passenger or try a busy morning.';
-  $('table-footer').textContent = `${people.length} ${people.length === 1 ? 'journey' : 'journeys'} shown · ${state.people.length}/160 session places used · Updates live`;
+  $('empty-state').querySelector('h3').textContent = state.people.length ? 'No journeys in this view.' : 'No passengers';
+  $('empty-state').querySelector('p').textContent = state.people.length ? 'Choose another status to see more passengers.' : 'Add a passenger or run a traffic scenario.';
+  $('table-footer').textContent = `${people.length} of ${matching.length} matching journeys shown · ${state.people.length}/${state.maxPeople} session places used · All journeys in telemetry`;
 }
 
+// COMPONENT INTERFACE: Share accepted state and control policy with the other frontend modules
+window.ElevatorLab = {getState:() => state, api, notify, updateControls};
 updateControls();
+/**
+ * Poll the C runtime serially so requests do not accumulate
+ * Retry more slowly while disconnected; simulation timing remains entirely in C
+ */
 (async function poll() {
   try { await api('/api/state'); } catch (_) { /* Connection status explains failures; retry automatically. */ }
   setTimeout(poll, connected ? 120 : 1000);

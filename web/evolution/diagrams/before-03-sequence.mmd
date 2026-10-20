@@ -1,0 +1,19 @@
+sequenceDiagram
+    actor Operator
+    participant UI as main.c
+    participant Core as elevator.c
+    participant Guard as guardrails.c
+    Operator->>UI: S
+    UI->>Core: elevator_press_stop
+    Note over Core: Set EMERGENCY_STOP and record wall time
+    loop Simulation loop
+        UI->>Guard: check and enforce
+        opt Stop with motion_ticks greater than zero
+            Guard->>Core: Force movement toward adjacent floor
+        end
+        UI->>Core: elevator_tick
+        UI->>Operator: Show stop status and periodic 20-second prompt
+    end
+    Operator->>UI: R
+    UI->>Core: elevator_release_stop
+    Note over Core: Clear stop flag and return to IDLE

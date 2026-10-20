@@ -1,22 +1,43 @@
-param([ValidateRange(1024, 65535)][int]$Port = 8099, [switch]$OpenBrowser)
+<#
+****************************************
+*
+* Elevator Lab -- Public HTTPS Session Launcher
+*
+* SPDX-License-Identifier: MIT
+*
+****************************************
+#>
+
+param([ValidateRange(1024, 65535)][int]$Port = 8099, [switch]$OpenBrowser, [string]$ListenAddress = '127.0.0.1', [string[]]$AllowedHost = @())
 $ErrorActionPreference = 'Stop'
+# SETTINGS: Preserve saved network access while allowing explicit command-line overrides
+$networkSettings = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'lab-network.json') -Raw | ConvertFrom-Json
+if (-not $PSBoundParameters.ContainsKey('ListenAddress')) { $ListenAddress = $networkSettings.ListenAddress }
+if (-not $PSBoundParameters.ContainsKey('AllowedHost')) { $AllowedHost = @($networkSettings.AllowedHost) }
 $publicDirectory = Join-Path $PSScriptRoot 'build\public'
 $toolsDirectory = Join-Path $PSScriptRoot 'build\tools'
 New-Item -ItemType Directory -Force $publicDirectory, $toolsDirectory | Out-Null
 $sessionPath = Join-Path $publicDirectory 'session.json'
+# SESSION OWNERSHIP: Refuse to overwrite an existing recorded public session
 if (Test-Path -LiteralPath $sessionPath) {
     throw 'A public-session record exists. Run .\stop-public.ps1 before starting another public session.'
 }
 
 # Test an actual exclusive bind, including Windows reserved/occupied ports.
-$portProbe = [System.Net.Sockets.TcpListener]::new([System.Net.IPAddress]::Loopback, $Port)
+$portProbe = [System.Net.Sockets.TcpListener]::new([System.Net.IPAddress]::Parse($ListenAddress), $Port)
 $portProbe.Server.ExclusiveAddressUse = $true
 try { $portProbe.Start() } finally { $portProbe.Stop() }
 
+# STARTUP 1: Build a dedicated C executable for this public session
 $executable = Join-Path $publicDirectory 'elevator_web.exe'
 Push-Location $PSScriptRoot
 try {
-    & gcc -Wall -Wextra -Werror -std=c99 -O2 -Iinclude src/elevator.c src/guardrails.c src/simulation.c src/web_server.c -o $executable -lws2_32
+    if (Get-Command node -ErrorAction SilentlyContinue) {
+        & node tools/check-evolution.mjs
+        if ($LASTEXITCODE -ne 0) { throw 'Evolution documentation is incomplete or stale. Run node tools/render-diagrams.mjs.' }
+    }
+    $sqliteObject = & .\tools\build-sqlite.ps1
+    & gcc -Wall -Wextra -Werror -std=c99 -O2 -Iinclude -Ivendor/sqlite src/elevator.c src/guardrails.c src/simulation.c src/telemetry.c src/web_server.c $sqliteObject -o $executable -lws2_32
     if ($LASTEXITCODE -ne 0) { throw 'C web server compilation failed.' }
 } finally { Pop-Location }
 
@@ -31,9 +52,11 @@ if ((Get-FileHash -LiteralPath $tunnelExecutable -Algorithm SHA256).Hash.ToLower
     throw "Checksum mismatch for $tunnelExecutable. Use the official $tunnelVersion release."
 }
 
+# STARTUP 2: Track newly created processes so failure cleanup touches only this launch
 $tunnelProcess = $null
 $serverProcess = $null
 try {
+    # STARTUP 3: Start the outbound tunnel hidden and wait for its assigned HTTPS hostname
     $tunnelLog = Join-Path $publicDirectory 'tunnel.log'
     $tunnelProcess = Start-Process -FilePath $tunnelExecutable -ArgumentList @('tunnel', '--no-autoupdate', '--protocol', 'http2', '--url', "http://127.0.0.1:$Port") -WindowStyle Hidden -PassThru -RedirectStandardOutput (Join-Path $publicDirectory 'tunnel.stdout.log') -RedirectStandardError $tunnelLog
     $publicUrl = $null
@@ -48,7 +71,10 @@ try {
     }
     if (-not $publicUrl) { throw "No public address assigned. See $tunnelLog" }
     # cloudflared preserves Host/Origin. Only this exact HTTPS origin is accepted by C.
-    $serverProcess = Start-Process -FilePath $executable -ArgumentList @('--port', $Port, '--web-root', ('"' + (Join-Path $PSScriptRoot 'web') + '"'), '--public-origin', $publicUrl) -WindowStyle Hidden -WorkingDirectory $PSScriptRoot -PassThru -RedirectStandardOutput (Join-Path $publicDirectory 'server.log') -RedirectStandardError (Join-Path $publicDirectory 'server.stderr.log')
+    $serverArguments = @('--port', $Port, '--listen-address', $ListenAddress, '--web-root', ('"' + (Join-Path $PSScriptRoot 'web') + '"'), '--public-origin', $publicUrl)
+    foreach ($hostName in $AllowedHost) { $serverArguments += @('--allowed-host', $hostName) }
+    $serverProcess = Start-Process -FilePath $executable -ArgumentList $serverArguments -WindowStyle Hidden -WorkingDirectory $PSScriptRoot -PassThru -RedirectStandardOutput (Join-Path $publicDirectory 'server.log') -RedirectStandardError (Join-Path $publicDirectory 'server.stderr.log')
+    # READINESS 1: Require the local C state endpoint to respond before declaring the session ready
     $ready = $false
     for ($attempt = 0; $attempt -lt 30; $attempt++) {
         $serverProcess.Refresh()
@@ -56,6 +82,7 @@ try {
         try { $null = Invoke-RestMethod -Uri "http://127.0.0.1:$Port/api/state" -TimeoutSec 2; $ready = $true; break } catch { Start-Sleep -Milliseconds 200 }
     }
     if (-not $ready) { throw 'C server did not become ready.' }
+    # READINESS 2: Verify the actual public endpoint, allowing for temporary DNS propagation
     $publicReady = $false
     $lastPublicError = ''
     for ($attempt = 0; $attempt -lt 15; $attempt++) {
@@ -83,10 +110,13 @@ try {
         }
     }
     if (-not $publicReady) { throw "Public endpoint did not become reachable: $publicUrl. $lastPublicError" }
+    # SESSION RECORD: Save process identity, executable and start time for safe later shutdown
     [ordered]@{
         PublicUrl = $publicUrl
         LocalUrl = "http://localhost:$Port"
         Port = $Port
+        ListenAddress = $ListenAddress
+        AllowedHost = $AllowedHost
         ServerProcessId = $serverProcess.Id
         ServerStartTimeUtc = $serverProcess.StartTime.ToUniversalTime().ToString('o')
         ServerExecutable = $executable
@@ -98,6 +128,7 @@ try {
     Write-Host "Local C server: http://localhost:$Port"
     Write-Host 'Running in the background. Stop with .\stop-public.ps1. Keep this computer awake and online.'
     if ($OpenBrowser) { Start-Process $publicUrl }
+# FAILURE CLEANUP: Stop only the processes created by this failed startup attempt
 } catch {
     if ($serverProcess -and -not $serverProcess.HasExited) { Stop-Process -Id $serverProcess.Id }
     if ($tunnelProcess -and -not $tunnelProcess.HasExited) { Stop-Process -Id $tunnelProcess.Id }

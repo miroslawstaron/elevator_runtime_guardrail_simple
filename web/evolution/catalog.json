@@ -1,0 +1,426 @@
+{
+  "schemaVersion": 1,
+  "title": "System evolution",
+  "stages": [
+    {
+      "id": "01",
+      "slug": "before",
+      "title": "The terminal baseline",
+      "date": "2026-10-20",
+      "summary": "One C process handles keyboard input, ASCII rendering, the elevator state machine and runtime guardrails. Requests share a single set of floor buttons.",
+      "sourceHash": "0bc3aa13209d7e7da689f2f3b55c1f1e265561fc360a7d6f227f9483a84739bf",
+      "notes": "/evolution/stages/before.md",
+      "diagrams": [
+        {
+          "name": "before-01-architecture",
+          "title": "Architecture",
+          "type": "architecture",
+          "sourceHash": "43402d5b4f18d60153ed150398b321b3e46860d0e64d43485ca85792ad5c974b",
+          "svgHash": "a783517cad2225999fb4283279e123e746e8669f09686ebd9c62ed03aab4c1d2",
+          "svg": "/evolution/diagrams/before-01-architecture.svg",
+          "mermaid": "/evolution/diagrams/before-01-architecture.mmd"
+        },
+        {
+          "name": "before-02-sequence",
+          "title": "Sequence: request and travel",
+          "type": "sequence",
+          "sourceHash": "9ad42bb24aee410315351aa45045c4a41a6142401173295812c3f51792dbab9d",
+          "svgHash": "37dd30444ce4f0f7b8085525a6012ea198d8d3bf1857ded7927efa9501580884",
+          "svg": "/evolution/diagrams/before-02-sequence.svg",
+          "mermaid": "/evolution/diagrams/before-02-sequence.mmd"
+        },
+        {
+          "name": "before-03-sequence",
+          "title": "Sequence: emergency stop and resume",
+          "type": "sequence",
+          "sourceHash": "4f239b2cf7b537f46aced6fa1e50b52674dfc1c1b9f74cdb6b0f85bcba826bcb",
+          "svgHash": "5d9e614aea1013121c7dfdc2f81a5bcca223600d1e656256300efbd49f2ccc7e",
+          "svg": "/evolution/diagrams/before-03-sequence.svg",
+          "mermaid": "/evolution/diagrams/before-03-sequence.mmd"
+        }
+      ]
+    },
+    {
+      "id": "02",
+      "slug": "after",
+      "title": "A web interface, a C runtime",
+      "date": "2026-10-20",
+      "summary": "The browser adds animated floors, cabin controls and passenger journeys. A C HTTP server and passenger dispatcher handle shared trips, capacity and intermediate stops.",
+      "sourceHash": "0554490232cb426adb2272632cb21e035cfa3154ef09a77be3d81fe624e90408",
+      "notes": "/evolution/stages/after.md",
+      "diagrams": [
+        {
+          "name": "after-01-architecture",
+          "title": "Architecture",
+          "type": "architecture",
+          "sourceHash": "62b3538c37cdcba86cf2fe3c03c09561e76fb265622872927fc0aba09c47c1aa",
+          "svgHash": "c4beabe8e137d8edb5285757f38954ce467c7f30332b3bd991b7cf49f032f717",
+          "svg": "/evolution/diagrams/after-01-architecture.svg",
+          "mermaid": "/evolution/diagrams/after-01-architecture.mmd"
+        },
+        {
+          "name": "after-02-sequence",
+          "title": "Sequence: add passengers and complete a shared trip",
+          "type": "sequence",
+          "sourceHash": "0921e09522ebccc294f640169f99b9f0f3166171258b67446b36e480c041bec6",
+          "svgHash": "354c38bc1864ee013afcb389bd8d0d4f5c77cdf9d6122d237771f9ccd64dcd38",
+          "svg": "/evolution/diagrams/after-02-sequence.svg",
+          "mermaid": "/evolution/diagrams/after-02-sequence.mmd"
+        },
+        {
+          "name": "after-03-sequence",
+          "title": "Sequence: new calls while moving and direction reversal",
+          "type": "sequence",
+          "sourceHash": "6db6bed93ed2d2d1113759ad08555ab25c86aa58e1bea448e6a6669cb9065746",
+          "svgHash": "a4b4b4537b37798c65ec3216e4d18070f2869de62c2a9db32d3521aef52a8c1f",
+          "svg": "/evolution/diagrams/after-03-sequence.svg",
+          "mermaid": "/evolution/diagrams/after-03-sequence.mmd"
+        },
+        {
+          "name": "after-04-sequence",
+          "title": "Sequence: stop, hold and resume",
+          "type": "sequence",
+          "sourceHash": "9fec12602bc4b16bf191c03a515b3ffca2da711c8aca8f52246116b6094e4073",
+          "svgHash": "4d67d81a727d60f693b38b5a8f4d5f4bf77ec775e204b69efb3ebe0f2b3e6f89",
+          "svg": "/evolution/diagrams/after-04-sequence.svg",
+          "mermaid": "/evolution/diagrams/after-04-sequence.mmd"
+        }
+      ]
+    },
+    {
+      "id": "03",
+      "slug": "public",
+      "title": "A door to the internet",
+      "date": "2026-10-20",
+      "summary": "An outbound Cloudflare tunnel exposes the C service through public HTTPS. The backend accepts the exact configured public hostname and Origin, with C running on port 8099.",
+      "sourceHash": "f4f397092133b14fe5d1de4dad0963b2fbce967d648a0821445e559ddba9f87e",
+      "notes": "/evolution/stages/public.md",
+      "diagrams": [
+        {
+          "name": "public-01-architecture",
+          "title": "Architecture",
+          "type": "architecture",
+          "sourceHash": "0fbc5e9fc1307ebc6dfbf38760cf56492f2c12a2d0642f18d35b321da8cc7186",
+          "svgHash": "795ca3946c0aa7b9e98710a6d1dd91b7f28194b5ae7e4dd0cf3b15769655f4a7",
+          "svg": "/evolution/diagrams/public-01-architecture.svg",
+          "mermaid": "/evolution/diagrams/public-01-architecture.mmd"
+        },
+        {
+          "name": "public-02-sequence",
+          "title": "Sequence: operate the simulator through the internet",
+          "type": "sequence",
+          "sourceHash": "73f53ae9b02efa8338ef1abc9a3110fea3f3a5b992b9270081efe721f93fd04c",
+          "svgHash": "43d73198b3578cf0a6722707c4d496948e1a1f00e34111a0c10ec11817976607",
+          "svg": "/evolution/diagrams/public-02-sequence.svg",
+          "mermaid": "/evolution/diagrams/public-02-sequence.mmd"
+        }
+      ]
+    },
+    {
+      "id": "04",
+      "slug": "telemetry",
+      "title": "Experiments that stay with you",
+      "date": "2026-10-20",
+      "summary": "Embedded SQLite retains 10 Hz elevator samples, events, passenger timings and textual feedback. Named runs, historical queries and JSON/CSV exports support experimentation.",
+      "sourceHash": "d061b4534121ea3f5c4bd16c4c31ca8b98cb46022e7bbf4961561c5e96f307bd",
+      "notes": "/evolution/stages/telemetry.md",
+      "diagrams": [
+        {
+          "name": "telemetry-01-architecture",
+          "title": "Architecture",
+          "type": "architecture",
+          "sourceHash": "74cbeaf74aa78c5533ca17d14cde59cd92ec8ff9740ce5947fa8ff609f0733f4",
+          "svgHash": "dc347f07c0c88ce717229d92f56c82f507f076351b95c5919bbe5f200f23c8fd",
+          "svg": "/evolution/diagrams/telemetry-01-architecture.svg",
+          "mermaid": "/evolution/diagrams/telemetry-01-architecture.mmd"
+        },
+        {
+          "name": "telemetry-02-sequence",
+          "title": "Sequence: record and query an experiment",
+          "type": "sequence",
+          "sourceHash": "d6e554742fad49e62018a14704303527da572a65d019d98ba0a92e7870f01fc9",
+          "svgHash": "1c1d79f873eea16fa5e5ea611df2fc3edb491c488065f6e5b6e7d67fc2baa7e0",
+          "svg": "/evolution/diagrams/telemetry-02-sequence.svg",
+          "mermaid": "/evolution/diagrams/telemetry-02-sequence.mmd"
+        },
+        {
+          "name": "telemetry-03-sequence",
+          "title": "Sequence: feedback survives a concurrent reset",
+          "type": "sequence",
+          "sourceHash": "acb655c1dae87f9cc2e98123e28dbb3b599d955489dbfad5f8c240e9e6e141bb",
+          "svgHash": "2f3183e677617f043e9f5b950f8d71f9a570dda878d7eb6cb96ba8cd45de56c6",
+          "svg": "/evolution/diagrams/telemetry-03-sequence.svg",
+          "mermaid": "/evolution/diagrams/telemetry-03-sequence.mmd"
+        }
+      ]
+    },
+    {
+      "id": "05",
+      "slug": "network",
+      "title": "Direct network access",
+      "date": "2026-10-20",
+      "summary": "Explicit IPv4 binding and hostname aliases allow direct access on port 8099 alongside the HTTPS tunnel. Host, port and Origin checks remain in the C server.",
+      "sourceHash": "e7147278cea12692b1bfa07d590506c63f83a83b83300386253a7a0469b4d42c",
+      "notes": "/evolution/stages/network.md",
+      "diagrams": [
+        {
+          "name": "network-01-architecture",
+          "title": "Architecture",
+          "type": "architecture",
+          "sourceHash": "c9b12113640acfe128d4539b89c170b09088b8f12566a019bc8908a0d6c1cff4",
+          "svgHash": "1cc112cff1486b1cc5f0bb1af252cdccb0ab770f3fa3564e6319a4f90d915642",
+          "svg": "/evolution/diagrams/network-01-architecture.svg",
+          "mermaid": "/evolution/diagrams/network-01-architecture.mmd"
+        },
+        {
+          "name": "network-02-sequence",
+          "title": "Sequence: a direct network request",
+          "type": "sequence",
+          "sourceHash": "1cdf913a663cfd19275dd9c17868aee38fc4685ff4c86ec4c7a791b8c5f0840a",
+          "svgHash": "2d261d1ec0811b6f612d6d7c8e8d676ab408cf8dd54780da111a0e9c33502f1e",
+          "svg": "/evolution/diagrams/network-02-sequence.svg",
+          "mermaid": "/evolution/diagrams/network-02-sequence.mmd"
+        }
+      ]
+    },
+    {
+      "id": "06",
+      "slug": "evolution",
+      "title": "The system tells its story",
+      "date": "2026-10-20",
+      "summary": "An evolution timeline brings every stage's architecture and sequence diagrams into the web interface. A shared catalog, generated assets and freshness checks keep future steps traceable.",
+      "sourceHash": "6331e162c50d1d3da00d4a69e2cf20e4386caed87ecad14609259f66ec22dbf3",
+      "notes": "/evolution/stages/evolution.md",
+      "diagrams": [
+        {
+          "name": "evolution-01-architecture",
+          "title": "Architecture",
+          "type": "architecture",
+          "sourceHash": "9c643ec92133863c01117e774e0f6534faad4b1284b4ac24a1c16e5f0de58ce3",
+          "svgHash": "4758bd8199dd7cc6f9e6e4a21d0a8651766d37dda71197ea99b7c3e9b05fd3b6",
+          "svg": "/evolution/diagrams/evolution-01-architecture.svg",
+          "mermaid": "/evolution/diagrams/evolution-01-architecture.mmd"
+        },
+        {
+          "name": "evolution-02-sequence",
+          "title": "Sequence: publish and inspect the next system stage",
+          "type": "sequence",
+          "sourceHash": "e85fca3a77bb6702d2a1bfd5f5f98d683d5a567f5fcb356812aead01f8ebb9af",
+          "svgHash": "a79a2b263fde44e36df72b6183a1725eb5506d1f8a0b60003fea6ff72e8cc324",
+          "svg": "/evolution/diagrams/evolution-02-sequence.svg",
+          "mermaid": "/evolution/diagrams/evolution-02-sequence.mmd"
+        }
+      ]
+    },
+    {
+      "id": "07",
+      "slug": "live-sequence",
+      "title": "Watch the current run unfold",
+      "date": "2026-10-20",
+      "summary": "Dashboard shortcuts expose the diagram history, a live sequence follows the current simulation run, and combined JSON/CSV exports include every recorded data kind.",
+      "sourceHash": "7797b91359ee90e754bac773f9d469d72c4cdfc8802330bcb730737361050054",
+      "notes": "/evolution/stages/live-sequence.md",
+      "diagrams": [
+        {
+          "name": "live-sequence-01-architecture",
+          "title": "Architecture",
+          "type": "architecture",
+          "sourceHash": "1c5eea11fd6a67c939c55d187bc428ef2827762325831749f4ae595e3d933df4",
+          "svgHash": "f8269e55d2a9eddcf692e778933d13cd612e36957683afa59f5644e7a3662598",
+          "svg": "/evolution/diagrams/live-sequence-01-architecture.svg",
+          "mermaid": "/evolution/diagrams/live-sequence-01-architecture.mmd"
+        },
+        {
+          "name": "live-sequence-02-sequence",
+          "title": "Sequence: follow the current run",
+          "type": "sequence",
+          "sourceHash": "e0f191179069e9cf9c206448f4cd863069367b17429153a858ae14edfe1e8360",
+          "svgHash": "21fe1fb8b739f0351f4c4622e05a91cd83d949dc09ba5452c372d683d2d30a1d",
+          "svg": "/evolution/diagrams/live-sequence-02-sequence.svg",
+          "mermaid": "/evolution/diagrams/live-sequence-02-sequence.mmd"
+        },
+        {
+          "name": "live-sequence-03-sequence",
+          "title": "Sequence: export every recorded data kind",
+          "type": "sequence",
+          "sourceHash": "7cbb4801c77cbbab7b4463e085ac1ff83d2944b1a1ce3a4a1bb9adc509306d09",
+          "svgHash": "71bdff8c374567504d9c38719c70e89fc9564ef6840fb3ed19535cbf0e74f8c2",
+          "svg": "/evolution/diagrams/live-sequence-03-sequence.svg",
+          "mermaid": "/evolution/diagrams/live-sequence-03-sequence.mmd"
+        }
+      ]
+    },
+    {
+      "id": "08",
+      "slug": "metriczone",
+      "title": "The Metriczone measurement lab",
+      "date": "2026-10-20",
+      "summary": "The supplied Metriczone logo shapes a deep teal and white interface, geometric typography and measurement-focused dashboard. Controls, live diagrams and experimentation tools share the new identity.",
+      "sourceHash": "06b9b6459d843944ba89442be033bcefedc50e188516c2dbcb105c88f2189efd",
+      "notes": "/evolution/stages/metriczone.md",
+      "diagrams": [
+        {
+          "name": "metriczone-01-architecture",
+          "title": "Architecture",
+          "type": "architecture",
+          "sourceHash": "d3f9777e372c6dab0638bef5dcace1463ef9c14c4b576a8c5f1311e457823b20",
+          "svgHash": "aeb6dac8840d021702bb05d94d95a69356f19d15747f4ff1fffccb934ed325c3",
+          "svg": "/evolution/diagrams/metriczone-01-architecture.svg",
+          "mermaid": "/evolution/diagrams/metriczone-01-architecture.mmd"
+        },
+        {
+          "name": "metriczone-02-sequence",
+          "title": "Sequence: operate the simulator with the new identity",
+          "type": "sequence",
+          "sourceHash": "901d4cacf3533168f584d2a65c4446a80d76651fd947d919cad68ad77512650d",
+          "svgHash": "4c722b807e3d2881bfafc890910e2dedebb24772f7f0f56cda0ede6a7e1986de",
+          "svg": "/evolution/diagrams/metriczone-02-sequence.svg",
+          "mermaid": "/evolution/diagrams/metriczone-02-sequence.mmd"
+        }
+      ]
+    },
+    {
+      "id": "09",
+      "slug": "comments",
+      "title": "Readable code, traceable behavior",
+      "date": "2026-10-20",
+      "summary": "Comments follow the guardrail module's conventions across the authored C backend, web interface, tools and tests. Module purpose, function contracts and inline explanations document the existing behavior.",
+      "sourceHash": "41aa085ce3ee168b9104a7efcc44f9c44470e125b27a954d705db0261d8a63ca",
+      "notes": "/evolution/stages/comments.md",
+      "diagrams": [
+        {
+          "name": "comments-01-architecture",
+          "title": "Architecture",
+          "type": "architecture",
+          "sourceHash": "4bb7940027b3b45df0d72139146f798e02a89a54cf46c071c74b85a8c784b8a6",
+          "svgHash": "259b4848683926f6ae9db02c60a9539845c93a69730da2db295d10ef47cec1aa",
+          "svg": "/evolution/diagrams/comments-01-architecture.svg",
+          "mermaid": "/evolution/diagrams/comments-01-architecture.mmd"
+        },
+        {
+          "name": "comments-02-sequence",
+          "title": "Sequence: annotate and verify without changing behavior",
+          "type": "sequence",
+          "sourceHash": "8aa9a9881d41e1fcc28cc9e56d949a5117556c988fe1f19d64ba9590af35390b",
+          "svgHash": "00053db51c78821a361e2bca5513f7a685abd3833daf51c16a99648632a22f6e",
+          "svg": "/evolution/diagrams/comments-02-sequence.svg",
+          "mermaid": "/evolution/diagrams/comments-02-sequence.mmd"
+        }
+      ]
+    },
+    {
+      "id": "10",
+      "slug": "traffic-analysis",
+      "title": "Traffic you can repeat, steering you can improve",
+      "date": "2026-10-20",
+      "summary": "Runnable morning, afternoon, occasional, VIP and custom traffic scenarios use a C arrival scheduler. Selected-run telemetry analysis explains measured bottlenecks and suggests steering experiments.",
+      "sourceHash": "18a9dd8929850c8ba866198fd4cc3144b028b6d1abed6d332a99c7b289c1d906",
+      "notes": "/evolution/stages/traffic-analysis.md",
+      "diagrams": [
+        {
+          "name": "traffic-analysis-01-architecture",
+          "title": "Architecture",
+          "type": "architecture",
+          "sourceHash": "fcc6e25da7b49fa09f367480f3676a7502cdb81ab512dc8eddeaa78a3754d709",
+          "svgHash": "9fab87656a8edb281dad6c6d6cbb2ac642ca27e6e7aa92aecbf814442b6b5b42",
+          "svg": "/evolution/diagrams/traffic-analysis-01-architecture.svg",
+          "mermaid": "/evolution/diagrams/traffic-analysis-01-architecture.mmd"
+        },
+        {
+          "name": "traffic-analysis-02-sequence",
+          "title": "Sequence: start and run reproducible traffic",
+          "type": "sequence",
+          "sourceHash": "b2cf2cd6d57305afc8563e7112213a035472d140122843583908f2001fe96e39",
+          "svgHash": "4fa5452a2607478451ba66bbf5c61a0fe5dff1f5143cd6abe57887dfc9881056",
+          "svg": "/evolution/diagrams/traffic-analysis-02-sequence.svg",
+          "mermaid": "/evolution/diagrams/traffic-analysis-02-sequence.mmd"
+        },
+        {
+          "name": "traffic-analysis-03-sequence",
+          "title": "Sequence: analyze evidence and propose an experiment",
+          "type": "sequence",
+          "sourceHash": "8969cb4ff96e024c2394fc17c19e74915e1afd93407589506f29f87c17d3e626",
+          "svgHash": "a5898f56ffe5c7cce387d5f36bd16a71885ad205f065d09312f5fbf47ff564c9",
+          "svg": "/evolution/diagrams/traffic-analysis-03-sequence.svg",
+          "mermaid": "/evolution/diagrams/traffic-analysis-03-sequence.mmd"
+        }
+      ]
+    },
+    {
+      "id": "11",
+      "slug": "elevator-first",
+      "title": "Elevator-first interface and autoevolution workflow",
+      "date": "2026-10-20",
+      "summary": "The elevator and controls precede scenarios and telemetry. Direct wording explains simulation, steering analysis and the autoevolution workflow; diagnostics and stage history remain available.",
+      "sourceHash": "00822def9afad414ca3dbdc22cf5c75afd9673c7e78f60a6933d4ac857c3a0e8",
+      "notes": "/evolution/stages/elevator-first.md",
+      "diagrams": [
+        {
+          "name": "elevator-first-01-architecture",
+          "title": "Architecture",
+          "type": "architecture",
+          "sourceHash": "fcc6e25da7b49fa09f367480f3676a7502cdb81ab512dc8eddeaa78a3754d709",
+          "svgHash": "1b1806882ef53d1da4efbd18a3fba6042698cc55053109cdc2782449e1b6146e",
+          "svg": "/evolution/diagrams/elevator-first-01-architecture.svg",
+          "mermaid": "/evolution/diagrams/elevator-first-01-architecture.mmd"
+        },
+        {
+          "name": "elevator-first-02-sequence",
+          "title": "Sequence: operate, analyze and evaluate a change",
+          "type": "sequence",
+          "sourceHash": "a8f1f15156d03ceb0a1f871e4a8629ba53cd75402d5004a8f52ff4f67614b882",
+          "svgHash": "baecb18e059c41bf87a635599d59499ae90eec949369034ce28bc95bee985c9a",
+          "svg": "/evolution/diagrams/elevator-first-02-sequence.svg",
+          "mermaid": "/evolution/diagrams/elevator-first-02-sequence.mmd"
+        }
+      ]
+    },
+    {
+      "id": "12",
+      "slug": "module-architecture",
+      "title": "Source modules and dependencies",
+      "date": "2026-10-20",
+      "summary": "Architecture diagrams show stage-specific C files, public headers, web components and tooling dependencies. Current C, web and deployment modules have separate views; sequences retain runtime behavior.",
+      "sourceHash": "e91f466e97d0d91aa994516498538b3002d56aa219d93f6a7ac5872e3ac5d6fb",
+      "notes": "/evolution/stages/module-architecture.md",
+      "diagrams": [
+        {
+          "name": "module-architecture-01-architecture",
+          "title": "Architecture: C files, public headers and include dependencies",
+          "type": "architecture",
+          "sourceHash": "834707068b91cc2629b5456f2a5fc2d0360258f62840cfc598f30b136864bb64",
+          "svgHash": "9a6fce77a8eb2811c46b36108ade2f86b2bab1df46c2ca82f5edb1d4068d3d91",
+          "svg": "/evolution/diagrams/module-architecture-01-architecture.svg",
+          "mermaid": "/evolution/diagrams/module-architecture-01-architecture.mmd"
+        },
+        {
+          "name": "module-architecture-02-architecture",
+          "title": "Architecture: HTML, JavaScript and CSS module dependencies",
+          "type": "architecture",
+          "sourceHash": "57be3204a6fcca0808c83c2bab67f1346f63df154344649a4430a7c583c31d30",
+          "svgHash": "05a388b5130a69d03708c65b50f1fa3bf3477bc503720daa4c327889713c49a0",
+          "svg": "/evolution/diagrams/module-architecture-02-architecture.svg",
+          "mermaid": "/evolution/diagrams/module-architecture-02-architecture.mmd"
+        },
+        {
+          "name": "module-architecture-03-architecture",
+          "title": "Architecture: documentation, build and deployment modules",
+          "type": "architecture",
+          "sourceHash": "c92f22cf5c76d6e21f8c447a7ab4c4d95bb734e1857074b78ab5adaa5d469f3c",
+          "svgHash": "8c9d16f39b267ed95cc4eb4877145c182994d49ac4c0ce81fba670fce0bbc6e1",
+          "svg": "/evolution/diagrams/module-architecture-03-architecture.svg",
+          "mermaid": "/evolution/diagrams/module-architecture-03-architecture.mmd"
+        },
+        {
+          "name": "module-architecture-04-sequence",
+          "title": "Sequence: analysis across the actual implementation modules",
+          "type": "sequence",
+          "sourceHash": "aa3c5c307dbcf9d8c7d5b4dc14d35fae0883ae925195b7cb3e646ffe480de9a4",
+          "svgHash": "e1b11f31c75cd329db60e9b89f251469f23d975f2827351a782642c5704b2afa",
+          "svg": "/evolution/diagrams/module-architecture-04-sequence.svg",
+          "mermaid": "/evolution/diagrams/module-architecture-04-sequence.mmd"
+        }
+      ]
+    }
+  ]
+}

@@ -1,3 +1,11 @@
+# ****************************************
+#
+# Elevator Lab -- CMake Runtime and Test Targets
+#
+# SPDX-License-Identifier: MIT
+#
+# ****************************************
+
 cmake_minimum_required(VERSION 3.10)
 project(elevator_guardrails C)
 
@@ -35,16 +43,27 @@ add_executable(test_simple
 
 # Add CUnit test executable (optional)
 # Browser frontend and passenger dispatcher; backend stays entirely in C.
-add_executable(elevator_web ${CORE_SOURCES} src/simulation.c src/web_server.c)
+# EMBEDDED STORAGE: Build the vendored database into the same C runtime
+add_library(embedded_sqlite STATIC vendor/sqlite/sqlite3.c)
+target_compile_definitions(embedded_sqlite PRIVATE SQLITE_OMIT_LOAD_EXTENSION SQLITE_THREADSAFE=0)
+target_include_directories(embedded_sqlite PUBLIC vendor/sqlite)
+# WEB TARGET: Reuse the original core and add dispatch, persistence and HTTP transport
+add_executable(elevator_web ${CORE_SOURCES} src/simulation.c src/telemetry.c src/web_server.c)
+target_link_libraries(elevator_web PRIVATE embedded_sqlite)
 if(WIN32)
     target_link_libraries(elevator_web PRIVATE ws2_32)
 endif()
+# VERIFICATION TARGETS: Exercise dispatch and SQLite independently of browser dependencies
 add_executable(test_simulation ${CORE_SOURCES} src/simulation.c tests/test_simulation.c)
+add_executable(test_telemetry ${CORE_SOURCES} src/simulation.c src/telemetry.c tests/test_telemetry.c)
+target_link_libraries(test_telemetry PRIVATE embedded_sqlite)
 set_target_properties(elevator_web test_simulation PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+# STATIC ASSETS: Copy the existing frontend into the build tree without a bundling step
 file(COPY web DESTINATION "${CMAKE_BINARY_DIR}")
 enable_testing()
 add_test(NAME passenger_simulation_tests COMMAND test_simulation)
+add_test(NAME telemetry_tests COMMAND test_telemetry)
 
 # Add CUnit test executable (optional)
 if(CUnit_FOUND)

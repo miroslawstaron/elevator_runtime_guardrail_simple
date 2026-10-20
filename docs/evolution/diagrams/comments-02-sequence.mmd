@@ -1,0 +1,17 @@
+sequenceDiagram
+    actor Maintainer
+    participant Reference as guardrails.c and previous stage
+    participant Source as Authored simulator sources
+    participant Audit as Comment-only audit
+    participant Checks as Compiler and existing checks
+    participant Web as Public Elevator Lab
+    Maintainer->>Reference: Read the commenting style and preserve the baseline
+    Maintainer->>Source: Add module banners, function explanations and inline steps
+    Note over Source: Use language-native comments and preserve executable code.
+    Maintainer->>Audit: Compare with the saved source baseline
+    Audit-->>Maintainer: Confirm only recorded comment insertions
+    Maintainer->>Checks: Build C and run unit, HTTP and browser checks
+    Checks-->>Maintainer: Existing simulator behavior remains verified
+    Maintainer->>Source: Append stage 09 architecture and sequence diagrams
+    Maintainer->>Web: Publish generated diagrams and commented frontend sources
+    Web-->>Maintainer: New stage visible with earlier snapshots retained

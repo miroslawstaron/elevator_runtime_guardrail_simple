@@ -1,0 +1,36 @@
+flowchart LR
+    Page["web/index.html<br/>Page structure, controls and script/style loading"]
+    subgraph Scripts[Browser JavaScript components]
+        App["web/app.js<br/>window.ElevatorLab, state polling and commands"]
+        Scenarios["web/scenarios.js<br/>Traffic configuration and progress"]
+        Explorer["web/telemetry.js<br/>Run selection, feedback and export"]
+        Analysis["web/analysis.js<br/>Recommendation rules and report rendering"]
+        Live["web/live-sequence.js<br/>Runtime event SVG and download"]
+        Evolution["web/evolution.js<br/>Catalog-driven diagram viewer"]
+    end
+    subgraph Styles[Stylesheets and image assets]
+        Base["web/app.css<br/>web/metriczone.css<br/>Base layout and visual theme"]
+        Components["web/scenarios.css<br/>web/telemetry.css<br/>web/live-sequence.css<br/>web/evolution.css<br/>Component and analysis styles"]
+        Logo["web/assets/metriczone-logo.png"]
+    end
+    HTTP["src/web_server.c<br/>Existing HTTP API and static asset module"]
+    Catalog["web/evolution/catalog.json<br/>web/evolution/diagrams/*<br/>web/evolution/stages/*<br/>Generated documentation"]
+    Page -->|loads| App
+    Page -->|loads| Scenarios
+    Page -->|loads| Explorer
+    Page -->|loads| Analysis
+    Page -->|loads| Live
+    Page -->|loads| Evolution
+    Page -->|loads| Base
+    Page -->|loads| Components
+    Page -->|references| Logo
+    Scenarios -->|uses shared API and state events| App
+    Explorer -->|uses shared API and state events| App
+    Analysis -->|uses shared state and control API| App
+    Live -->|uses state events and control API| App
+    Evolution -->|uses control availability API| App
+    App -->|state, commands and scenario HTTP API| HTTP
+    Explorer -->|telemetry and feedback HTTP API| HTTP
+    Analysis -->|analysis HTTP API| HTTP
+    Evolution -->|reads through static HTTP routes| Catalog
+    HTTP -->|serves| Catalog

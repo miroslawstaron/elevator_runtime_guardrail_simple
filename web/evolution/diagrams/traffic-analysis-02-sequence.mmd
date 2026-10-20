@@ -1,0 +1,31 @@
+sequenceDiagram
+    actor Operator
+    participant UI as Scenario editor
+    participant HTTP as C HTTP server
+    participant Store as SQLite recorder
+    participant Clock as C simulation clock
+    participant Dispatch as Passenger dispatcher
+    participant Core as Elevator and guardrails
+    Operator->>UI: Select preset or configure custom arrival streams
+    UI->>HTTP: POST scenario type, people, window, seed, streams
+    HTTP->>HTTP: Validate all streams and bounds before mutation
+    alt Invalid configuration
+        HTTP-->>UI: 400, current experiment remains intact
+    else Valid configuration
+        HTTP->>Store: Capture and archive previous run, create named experiment
+        Store-->>HTTP: New run identity
+        HTTP->>Clock: Install scheduled journeys, reset speed to 1x
+        HTTP->>Store: Persist schedule, VIP flags and configuration events
+        HTTP-->>UI: Authoritative state with scheduled/waiting people
+        loop Every 100 ms wall interval, repeated by selected speed
+            Clock->>Dispatch: Release due arrivals at 100 ms simulation steps
+            Dispatch->>Dispatch: Respect rider stops, direction, capacity, VIP and aging
+            Dispatch->>Core: Request safe landing and service passengers
+            Core-->>Dispatch: Cabin state and enforced guardrails
+            Dispatch->>Store: Persist each simulation step and changed journeys
+        end
+        Note over Clock,Store: Continues without an open browser, restart archives interrupted schedules.
+        Operator->>HTTP: Cancel future arrivals
+        HTTP->>Store: Mark only scheduled people cancelled
+        Note over Dispatch,Core: Existing waiting and riding journeys continue.
+    end

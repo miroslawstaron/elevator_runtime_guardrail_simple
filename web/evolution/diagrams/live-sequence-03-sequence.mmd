@@ -1,0 +1,19 @@
+sequenceDiagram
+    actor User
+    participant Export as Browser exporter
+    participant API as C telemetry read API
+    participant DB as Embedded SQLite
+    User->>Export: Choose experiment, tick range and All record types
+    Export->>API: Read summary when no end tick was supplied
+    API->>DB: Obtain last recorded tick
+    API-->>Export: Shared export cutoff
+    loop Samples, runtime events, passenger journeys and feedback
+        loop Until all pages are read
+            Export->>API: Read dataset with run ID, tick range, limit and offset
+            API->>DB: Query ordered records
+            DB-->>API: Next page
+            API-->>Export: Typed rows and pagination metadata
+        end
+    end
+    Export->>Export: Merge by tick with a recordType discriminator
+    Export-->>User: One JSON or CSV download preserving original fields

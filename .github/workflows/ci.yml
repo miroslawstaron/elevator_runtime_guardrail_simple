@@ -1,3 +1,11 @@
+# ****************************************
+#
+# Elevator Lab -- Cross-Platform Build and Integration Checks
+#
+# SPDX-License-Identifier: MIT
+#
+# ****************************************
+
 name: CI
 
 on:
@@ -29,14 +37,23 @@ jobs:
     - name: Check guardrails integrity
       run: make check-guardrails
 
+    # DOCUMENTATION CHECK: Require the stage registry, rendered diagrams and web mirrors to agree
+    - name: Verify evolution diagrams and published web assets
+      run: node tools/check-evolution.mjs
+
     - name: Build project
       run: make all
 
     - name: Run tests
       run: make test
 
+    # HTTP VERIFICATION: Start compiled services in isolated tests on both supported CI platforms
     - name: Test C HTTP server
       run: node tests/test_web.mjs ./elevator_web${{ runner.os == 'Windows' && '.exe' || '' }}
+
+    # PERSISTENCE VERIFICATION: Confirm experiment history and passenger feedback survive service restarts
+    - name: Test persistent telemetry and passenger feedback
+      run: node tests/test_telemetry_web.mjs ./elevator_web${{ runner.os == 'Windows' && '.exe' || '' }}
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4.4.0

@@ -1,0 +1,20 @@
+sequenceDiagram
+    actor User
+    participant Browser as Metriczone Elevator Lab
+    participant Server as Existing C HTTP server
+    participant Runtime as C simulation
+    participant DB as Embedded SQLite
+    User->>Browser: Open the existing simulator URL
+    Browser->>Server: GET interface, local logo and styles
+    Server-->>Browser: Metriczone identity assets
+    Browser->>Server: GET authoritative elevator state
+    Server-->>Browser: Cabin, passengers, run and recent events
+    Browser->>Browser: Render teal controls, measurement cards and live sequence
+    User->>Browser: Add a passenger or operate the elevator
+    Browser->>Server: POST existing command API
+    Server->>Runtime: Apply validated command
+    Runtime->>DB: Persist telemetry through the existing recorder
+    Server-->>Browser: Updated state
+    User->>Browser: Explore telemetry or architecture and sequence history
+    Browser->>Server: GET existing telemetry APIs or generated diagrams
+    Server-->>Browser: Preserved experiment history or selected stage snapshot

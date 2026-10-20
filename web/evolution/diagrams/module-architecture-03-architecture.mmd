@@ -1,0 +1,37 @@
+flowchart TB
+    subgraph Documentation[Documentation tooling]
+        Sources["docs/evolution/stages.json<br/>docs/evolution/NN-*.md"]
+        Library["tools/evolution-lib.mjs<br/>Registry and diagram-source reader"]
+        Renderer["tools/render-diagrams.mjs<br/>SVG, Mermaid, notes and catalog generator"]
+        Checker["tools/check-evolution.mjs<br/>Generated-asset validator"]
+        Generated["web/evolution/*<br/>docs/evolution/diagrams/*<br/>docs/evolution/diagrams.html"]
+        Renderer -->|imports| Library
+        Checker -->|imports| Library
+        Library -->|reads| Sources
+        Renderer -->|generates| Generated
+        Checker -->|validates| Generated
+    end
+    subgraph Build[Build definitions and outputs]
+        Definitions["build.ps1 / Makefile / CMakeLists.txt"]
+        CModules["src/web_server.c / src/simulation.c<br/>src/telemetry.c / src/elevator.c<br/>src/guardrails.c and include/*.h"]
+        Vendor["tools/build-sqlite.ps1<br/>vendor/sqlite/sqlite3.c and sqlite3.h"]
+        Binary["elevator_web executable<br/>C modules linked with embedded SQLite"]
+        Definitions -->|source inputs| CModules
+        Definitions -->|compiles or reuses SQLite object| Vendor
+        Definitions -->|produces| Binary
+    end
+    subgraph Deployment[Windows launch and network modules]
+        Launch["run-web.ps1 / run-public.ps1<br/>tools/restart-public-server.ps1"]
+        Stop["stop-public.ps1"]
+        Settings["lab-network.json"]
+        Session["build/public/session.json"]
+        Firewall["tools/enable-lab-firewall.ps1"]
+        Tunnel["cloudflared.exe<br/>External tunnel executable"]
+        Launch -->|reads| Settings
+        Launch -->|creates or reads process identities| Session
+        Stop -->|checks process identities| Session
+        Firewall -->|reads| Settings
+        Launch -->|public-session transport dependency| Tunnel
+    end
+    Launch -->|launches or restarts| Binary
+    Binary -->|serves generated documentation| Generated

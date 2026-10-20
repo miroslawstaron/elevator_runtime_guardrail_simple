@@ -1,0 +1,23 @@
+sequenceDiagram
+    actor Developer
+    participant Docs as Stage documents and registry
+    participant Generator as Diagram generator
+    participant Assets as Generated web assets
+    participant Server as C HTTP server
+    actor User
+    participant Browser as Evolution viewer
+    Developer->>Docs: Preserve baseline and append a new implementation stage
+    Note over Docs: Each stage requires architecture and sequence diagrams.
+    Developer->>Generator: Render the stage registry
+    Generator->>Docs: Read ordered snapshots and Mermaid sources
+    Generator->>Assets: Write SVGs, editable sources, notes and hashed catalog
+    Developer->>Assets: Run completeness and freshness checks
+    User->>Browser: Open System evolution
+    Browser->>Server: GET generated evolution catalog
+    Server-->>Browser: Ordered stages and diagram metadata
+    User->>Browser: Select a stage and architecture or sequences
+    Browser->>Server: GET selected SVG diagram
+    Server-->>Browser: Generated diagram with restricted SVG policy
+    User->>Browser: Enlarge, zoom or download a diagram
+    Browser->>Server: GET SVG or editable Mermaid source
+    Server-->>User: Documentation for the selected system version

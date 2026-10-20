@@ -1,38 +1,70 @@
+<!--
+****************************************
+*
+* Elevator Lab -- Dashboard Structure and Accessible Interaction Regions
+*
+* SPDX-License-Identifier: MIT
+*
+****************************************
+-->
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#073e51">
-  <title>Elevator Lab · agenticAI</title>
-  <link rel="icon" href="/assets/agenticai-logo.png">
+  <meta name="theme-color" content="#003e4d">
+  <meta name="description" content="Elevator simulator for testing traffic scenarios, analyzing telemetry and evaluating steering changes.">
+  <title>Elevator simulator · Metriczone</title>
+  <link rel="icon" href="/assets/metriczone-logo.png">
+  <!-- STYLES: Load component layouts first and the current Metriczone identity last -->
   <link rel="stylesheet" href="/app.css">
+  <link rel="stylesheet" href="/telemetry.css">
+  <link rel="stylesheet" href="/evolution.css">
+  <link rel="stylesheet" href="/live-sequence.css">
+  <link rel="stylesheet" href="/scenarios.css">
+  <link rel="stylesheet" href="/metriczone.css">
+  <!-- MODULE ORDER: Shared state and control policy are available before dependent deferred scripts -->
   <script src="/app.js" defer></script>
+  <script src="/telemetry.js" defer></script>
+  <script src="/evolution.js" defer></script>
+  <script src="/live-sequence.js" defer></script>
+  <script src="/scenarios.js" defer></script>
+  <script src="/analysis.js" defer></script>
 </head>
 <body>
+  <!-- NAVIGATION: Preserve the supplied logo and expose simulator, experiment and documentation regions -->
   <aside class="sidebar">
-    <a class="brand" href="/" aria-label="agenticAI Elevator Lab"><img src="/assets/agenticai-logo.png" alt="agenticAI"></a>
-    <div class="workspace-label">THE SIMULATION SPACE</div>
-    <a class="nav-link active" href="#simulation"><span class="nav-icon">↕</span> Elevator Lab <span class="nav-dot"></span></a>
+    <a class="brand" href="/" aria-label="Elevator simulator home"><img src="/assets/metriczone-logo.png" alt="Metriczone" width="1254" height="1254"></a>
+    <div class="workspace-label">SIMULATOR</div>
+    <a class="nav-link active" href="#simulation"><span class="nav-icon">↕</span> Elevator <span class="nav-dot"></span></a>
+    <a class="nav-link" href="#scenarios"><span class="nav-icon">▷</span> Scenarios</a>
+    <a class="nav-link" href="#telemetry"><span class="nav-icon">▥</span> Telemetry & analysis</a>
     <a class="nav-link" href="#journeys"><span class="nav-icon">☷</span> Passenger journeys</a>
     <a class="nav-link" href="#activity"><span class="nav-icon">◷</span> Live activity</a>
-    <div class="sidebar-note"><span class="outline-icon">↟</span><h3>Small system.<br>Real interactions.</h3><p>One elevator, ten floors, and a different story on every journey.</p><div class="runtime-tag"><span class="status-dot"></span> POWERED BY C</div></div>
-    <div class="sidebar-footer"><span class="mono">01</span><span>Elevator Lab<br><small>Runtime guardrails example</small></span></div>
+    <a class="nav-link" href="#live-sequence"><span class="nav-icon">⇢</span> Current run sequence</a>
+    <a class="nav-link" href="#evolution"><span class="nav-icon">◇</span> System evolution</a>
+    <div class="sidebar-note"><h3>Autoevolution workflow</h3><p>Run traffic scenarios. Analyze telemetry. Test steering changes. Record each implementation stage.</p><div class="runtime-tag"><span class="status-dot"></span> LIVE SIMULATION</div></div>
+    <div class="sidebar-footer"><span class="mono">MZ</span><span>Elevator Lab<br><small>Autoevolution</small></span></div>
   </aside>
 
   <main id="simulation">
-    <header class="topbar"><div class="breadcrumb">Workspace <span>/</span> <strong>Elevator Lab</strong></div><div class="connection" id="connection" role="status"><span class="status-dot"></span><span>Connecting to runtime</span></div></header>
-    <section class="page-heading"><div><div class="eyebrow"><span class="little-line"></span> AN INTERACTIVE ELEVATOR SIMULATION</div><h1>Every floor. Every journey.</h1><p>Set people in motion. Watch the system work.</p></div><div class="heading-actions"><button class="button button-quiet" id="reset-button" title="Clear all journeys and return to floor 1"><span aria-hidden="true">↺</span> Reset</button><button class="button button-dark" id="demo-button"><span aria-hidden="true">✧</span> Try a busy morning</button></div></section>
+  <!-- CONNECTION STATUS: Show whether the browser is receiving authoritative state from C -->
+    <header class="topbar"><div class="breadcrumb">Metriczone <span>/</span> <strong>Elevator simulator</strong></div><div class="connection" id="connection" role="status"><span class="status-dot"></span><span>Connecting to runtime</span></div></header>
+    <section class="page-heading"><div><div class="eyebrow"><span class="little-line"></span> AUTOEVOLUTION</div><h1>Elevator simulator</h1><p>Run traffic scenarios, analyze telemetry, and evaluate steering changes.</p></div><div class="heading-actions"><button class="button button-quiet" id="reset-button" title="Reset the elevator to floor 1 and archive the current run"><span aria-hidden="true">↺</span> Reset</button><button class="button button-dark" id="demo-button"><span aria-hidden="true">↗</span> Quick demo · 6 people</button></div></section>
 
+  <!-- WORKFLOW: Keep the primary tasks reachable on desktop and phone. -->
+    <nav class="workflow-links" aria-label="Simulator workflow"><a href="#elevator">Elevator</a><a href="#scenarios">Scenarios</a><a href="#telemetry">Telemetry & analysis</a></nav>
+  <!-- LIVE COUNTS: These values are rendered from accepted runtime snapshots -->
     <section class="metrics" aria-label="Simulation statistics">
-      <div class="metric"><div class="metric-icon mint">♙</div><div><span class="metric-label">Waiting to board</span><strong id="waiting-count">—</strong></div><span class="metric-note">across all floors</span></div>
-      <div class="metric"><div class="metric-icon blue">↕</div><div><span class="metric-label">In the cabin</span><strong><span id="riding-count">—</span><small> / 8</small></strong></div><span class="metric-note">traveling together</span></div>
-      <div class="metric"><div class="metric-icon apricot">✓</div><div><span class="metric-label">Journeys completed</span><strong id="arrived-count">—</strong></div><span class="metric-note" id="stops-count">0 stops made</span></div>
+      <div class="metric"><div class="metric-icon mint"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><circle cx="16" cy="10" r="4"/><path d="M7 26v-3a9 9 0 0 1 18 0v3M25 7a4 4 0 0 1 0 8M4 7a4 4 0 0 0 0 8"/></svg></div><div><span class="metric-label">Waiting to board</span><strong id="waiting-count">—</strong></div><span class="metric-note">across all floors</span></div>
+      <div class="metric"><div class="metric-icon blue"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><rect x="5" y="4" width="22" height="24" rx="5"/><path d="M12 22V10m-4 4 4-4 4 4M21 10v12m-4-4 4 4 4-4"/></svg></div><div><span class="metric-label">In the cabin</span><strong><span id="riding-count">—</span><small> / 8</small></strong></div><span class="metric-note">seats occupied</span></div>
+      <div class="metric"><div class="metric-icon apricot"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M5 25V15m8 10V9m8 16V4m-17 24h24M21 4l4 4m-4-4-4 4"/></svg></div><div><span class="metric-label">Journeys completed</span><strong id="arrived-count">—</strong></div><span class="metric-note" id="stops-count">0 stops made</span></div>
     </section>
 
-    <div class="simulation-grid">
+  <!-- OPERATION: Keep building visualization, passenger creation and cabin controls in one workspace -->
+    <div class="simulation-grid" id="elevator">
       <section class="card building-card" aria-labelledby="building-title">
-        <div class="card-heading"><div><div class="eyebrow">THE BUILDING</div><h2 id="building-title">A view from every floor</h2></div><span class="pill" id="motion-status">Connecting</span></div>
+        <div class="card-heading"><div><h2 id="building-title">Elevator</h2></div><span class="pill" id="motion-status">Connecting</span></div>
         <div class="building-meta"><span><i class="legend-dot"></i> Waiting passenger</span><span><i class="legend-dot lime-dot"></i> Elevator cabin</span><span class="mono">10 FLOORS · 1 CABIN</span></div>
         <div class="building" id="building"><div class="shaft"></div><div id="floors"></div><div class="elevator-car" id="elevator-car" aria-label="Elevator cabin"><div class="car-interior"><span id="car-people">0</span><small>ON BOARD</small></div><div class="car-door left-door"></div><div class="car-door right-door"></div><div class="car-front"><span aria-hidden="true">↕</span><span id="car-floor">01</span></div></div></div>
         <div class="building-footer"><span><i class="status-dot" id="guard-dot"></i><span id="guard-status">Waiting for C runtime</span></span><span id="door-status">Doors closed</span></div>
@@ -40,20 +72,84 @@
       </section>
 
       <div class="controls-column">
-        <section class="card passenger-card" aria-labelledby="passenger-title"><div class="card-heading"><div><div class="eyebrow">MAKE A JOURNEY</div><h2 id="passenger-title">Add a passenger</h2></div><span class="small-icon" aria-hidden="true">♙+</span></div><p class="card-intro">Choose where they are and where they’re going.</p>
-          <form id="passenger-form"><label for="passenger-name">Passenger name</label><input id="passenger-name" name="name" placeholder="e.g. Alex" maxlength="40" value="Alex" required autocomplete="off"><div class="form-row"><div><label for="from-floor">From floor</label><select id="from-floor" name="from" aria-label="Starting floor"></select></div><span class="route-arrow" aria-hidden="true">→</span><div><label for="to-floor">To floor</label><select id="to-floor" name="to" aria-label="Destination floor"></select></div></div><div class="group-field"><label for="people-count">Traveling as a group?<small>Add up to 8 people at once.</small></label><select id="people-count" name="count" aria-label="Number of passengers"><option value="1">1 person</option><option value="2">2 people</option><option value="3">3 people</option><option value="4">4 people</option><option value="5">5 people</option><option value="6">6 people</option><option value="7">7 people</option><option value="8">8 people</option></select></div><button class="button button-lime" type="submit" id="add-button">Add to waiting queue <span aria-hidden="true">↗</span></button><p class="form-error" id="form-error" role="alert" hidden></p></form>
-        </section>
+        <section class="card cabin-card" aria-labelledby="cabin-title"><div class="card-heading"><div><h2 id="cabin-title">Cabin controls</h2></div><span class="small-icon" aria-hidden="true">⌘</span></div><div class="floor-display"><div><span class="metric-label">CURRENT FLOOR</span><strong id="current-floor">01</strong></div><div class="destination"><span id="direction-label">Standing by</span><span id="target-label">No pending request</span></div></div><label class="panel-label">Request a floor</label><div class="floor-buttons" id="floor-buttons" role="group" aria-label="Cabin floor buttons"></div><div class="door-buttons"><button class="button button-quiet" id="open-button" data-action="open"><span aria-hidden="true">◁ ▷</span> Open doors</button><button class="button button-quiet" id="close-button" data-action="close"><span aria-hidden="true">▷ ◁</span> Close doors</button></div><button class="button button-stop" id="stop-button" data-action="stop"><span class="stop-symbol" aria-hidden="true"></span> Emergency stop</button><p class="control-hint">Stops safely at the next landing.</p></section>
 
-        <section class="card cabin-card" aria-labelledby="cabin-title"><div class="card-heading"><div><div class="eyebrow">YOU’RE IN CONTROL</div><h2 id="cabin-title">Cabin controls</h2></div><span class="small-icon" aria-hidden="true">⌘</span></div><div class="floor-display"><div><span class="metric-label">CURRENT FLOOR</span><strong id="current-floor">01</strong></div><div class="destination"><span id="direction-label">Standing by</span><span id="target-label">Ready for a journey</span></div></div><label class="panel-label">Request a floor</label><div class="floor-buttons" id="floor-buttons" role="group" aria-label="Cabin floor buttons"></div><div class="door-buttons"><button class="button button-quiet" id="open-button" data-action="open"><span aria-hidden="true">◁ ▷</span> Open doors</button><button class="button button-quiet" id="close-button" data-action="close"><span aria-hidden="true">▷ ◁</span> Close doors</button></div><button class="button button-stop" id="stop-button" data-action="stop"><span class="stop-symbol" aria-hidden="true"></span> Emergency stop</button><p class="control-hint">Stops safely at the next landing.</p></section>
+        <section class="card passenger-card" aria-labelledby="passenger-title"><div class="card-heading"><div><h2 id="passenger-title">Add a passenger</h2></div><span class="small-icon" aria-hidden="true">♙+</span></div><p class="card-intro">Set the origin, destination and number of passengers.</p>
+          <form id="passenger-form"><label for="passenger-name">Passenger name</label><input id="passenger-name" name="name" placeholder="e.g. Alex" maxlength="40" value="Alex" required autocomplete="off"><div class="form-row"><div><label for="from-floor">From floor</label><select id="from-floor" name="from" aria-label="Starting floor"></select></div><span class="route-arrow" aria-hidden="true">→</span><div><label for="to-floor">To floor</label><select id="to-floor" name="to" aria-label="Destination floor"></select></div></div><div class="group-field"><label for="people-count">Number of passengers<small>Add up to 8 people at once.</small></label><select id="people-count" name="count" aria-label="Number of passengers"><option value="1">1 person</option><option value="2">2 people</option><option value="3">3 people</option><option value="4">4 people</option><option value="5">5 people</option><option value="6">6 people</option><option value="7">7 people</option><option value="8">8 people</option></select></div><button class="button button-lime" type="submit" id="add-button">Add to waiting queue <span aria-hidden="true">↗</span></button><p class="form-error" id="form-error" role="alert" hidden></p></form>
+        </section>
       </div>
     </div>
 
+  <!-- SCENARIOS: Prepare traffic streams before archiving the current experiment and starting a run. -->
+    <section class="card scenario-card" id="scenarios" aria-labelledby="scenario-title">
+      <div class="card-heading"><div><h2 id="scenario-title">Traffic scenarios</h2></div><a href="#telemetry">Analyze a run ↗</a></div>
+      <div class="scenario-presets" role="group" aria-label="Usage scenarios">
+        <button type="button" data-preset="morning" aria-pressed="true"><strong>Busy morning</strong><span>300 people · lobby → floors 1–9</span></button>
+        <button type="button" data-preset="afternoon" aria-pressed="false"><strong>Busy afternoon</strong><span>300 people · floors 1–9 → lobby</span></button>
+        <button type="button" data-preset="occasional" aria-pressed="false"><strong>Occasional travellers</strong><span>24 people · mixed floors, spread out</span></button>
+        <button type="button" data-preset="vip" aria-pressed="false"><strong>VIPs</strong><span>40 people · 1 in 5 gets priority</span></button>
+        <button type="button" data-preset="custom" aria-pressed="false"><strong>Custom scenario</strong><span>Set routes, timing and priority</span></button>
+      </div>
+      <form id="scenario-form">
+        <p id="scenario-description">300 passengers arrive evenly over 10 minutes and travel from floor 0 to seeded destinations on floors 1–9.</p>
+        <div class="scenario-fields"><div id="scenario-count-field"><label for="scenario-count">People</label><input id="scenario-count" type="number" min="1" max="1000" step="1" value="300" required></div><div id="scenario-duration-field"><label for="scenario-duration">Arrival window (seconds)</label><input id="scenario-duration" type="number" min="0" max="86400" step="1" value="600" required></div><div><label for="scenario-seed">Repeatable seed</label><input id="scenario-seed" type="number" min="1" max="2147483647" step="1" value="42" required></div></div>
+        <div id="custom-scenario" hidden><p>Each stream specifies people, route, first arrival, interval between people, and VIP priority. Use interval 0 for a simultaneous group. Up to 20 streams and 1,000 people; last arrival within 24 simulation hours.</p><div id="scenario-flows"></div><button class="button button-quiet" id="add-scenario-flow" type="button">+ Add arrival stream</button><span id="scenario-custom-total" role="status"></span></div>
+        <div class="scenario-actions"><button class="button button-dark" id="run-scenario" type="submit">Run busy morning ▷</button><span>Starts a fresh experiment at 1×. Previous telemetry is saved; unfinished journeys are archived as cancelled.</span></div>
+      </form>
+      <p id="scenario-error" class="telemetry-error" role="alert" hidden></p>
+      <div class="scenario-live"><p id="scenario-status" role="status">Choose a scenario to begin.</p><div><label for="simulation-speed">Simulation speed</label><select id="simulation-speed"><option value="1">1× · real time</option><option value="5">5×</option><option value="20">20×</option></select><button class="button button-quiet" id="cancel-scenario" type="button">Cancel future arrivals</button></div></div>
+      <p class="scenario-footnote">Scenarios continue when you close this page. Eight seats per cabin. VIP pickup priority applies when the cabin is empty; boarding respects direction and capacity. Waiting 120 seconds raises regular passengers above new VIPs.</p>
+    </section>
+  <!-- EXPERIMENTS: Query persistent runs and export selected data or every recorded data kind -->
+    <section class="card telemetry-card" id="telemetry" aria-labelledby="telemetry-title">
+      <div class="card-heading"><div><h2 id="telemetry-title">Telemetry & algorithm analysis</h2></div><span class="pill" id="recording-status" role="status">Connecting to recorder</span></div>
+      <p class="telemetry-intro">Select a run to inspect elevator samples, passenger timings, events and feedback. Compare results to evaluate steering changes.</p>
+      <div class="experiment-toolbar"><div class="run-picker"><label for="experiment-run">Experiment run</label><select id="experiment-run" aria-label="Experiment run"></select><button class="text-button" id="older-runs" type="button" hidden>Load older experiments</button></div><form id="experiment-form"><label for="experiment-name">Start a new experiment</label><div class="experiment-create"><input id="experiment-name" name="name" maxlength="80" placeholder="e.g. Morning traffic · baseline" required><button class="button button-dark" type="submit" id="start-experiment">Start experiment ↗</button></div><small>Resets the elevator and starts a new run. Previous telemetry is retained.</small></form></div>
+      <div class="telemetry-metrics"><div><span>Recorded samples</span><strong id="recorded-samples">—</strong><small id="recorded-quality">100 ms between ticks</small></div><div><span>Completed journeys</span><strong id="recorded-journeys">—</strong><small id="recorded-run-id">Current experiment</small></div><div><span>Average wait</span><strong id="recorded-wait">—</strong><small id="recorded-ride">Ride time not yet measured</small></div><div><span>Passenger feedback</span><strong id="recorded-feedback">—</strong><small id="recorded-rating">No ratings yet</small></div></div>
+      <!-- ANALYSIS: Recommendations use the selected experiment's complete persisted telemetry. -->
+      <div class="analysis-panel"><div class="analysis-heading"><div><h3>Steering recommendations</h3><p>Analyze the selected run to identify candidate algorithm changes.</p></div><button class="button button-dark" type="button" id="analyze-telemetry">Analyze telemetry & suggest improvements ↗</button></div><p id="analysis-status" role="status">An evidence-based report for the selected experiment. Full run; table filters do not apply. Suggestions do not change the running algorithm.</p><div id="analysis-results" hidden><div id="analysis-metrics" class="analysis-metrics"></div><ol id="analysis-recommendations"></ol><p id="analysis-next-step"></p></div></div>
+      <form id="telemetry-filter" class="telemetry-filter"><div><label for="telemetry-dataset">Data set</label><select id="telemetry-dataset"><option value="passengers">Passenger journeys</option><option value="samples">Elevator samples</option><option value="events">Runtime events</option><option value="feedback">Passenger feedback</option></select></div><div><label for="telemetry-from">From tick</label><input id="telemetry-from" type="number" min="0" max="2147483647" step="1" value="0"></div><div><label for="telemetry-to">Through tick</label><input id="telemetry-to" type="number" min="0" max="2147483647" step="1" placeholder="Latest"></div><div id="passenger-filter-field"><label for="telemetry-passenger">Passenger ID</label><input id="telemetry-passenger" type="number" min="1" max="1000" step="1" placeholder="All passengers"></div><div><label for="telemetry-limit">Rows per page</label><select id="telemetry-limit"><option value="25">25</option><option value="50" selected>50</option><option value="100">100</option><option value="200">200</option></select></div><button class="button button-dark" type="submit" id="query-telemetry">Apply filters</button></form>
+      <div class="telemetry-results-heading"><span id="telemetry-result-label">Waiting for recorded data</span><div class="export-controls"><div><label for="telemetry-export-scope">Export records</label><select id="telemetry-export-scope"><option value="selected">Selected data set</option><option value="all">All record types</option></select></div><button class="button button-quiet" type="button" id="export-json">Export JSON ↓</button><button class="button button-quiet" type="button" id="export-csv">Export CSV ↓</button></div></div>
+      <p id="export-scope-note" class="export-scope-note">Exports all pages of the selected data set within the tick range.</p>
+      <p class="telemetry-error" id="telemetry-error" role="alert" hidden></p>
+      <div class="telemetry-table-wrapper"><table id="telemetry-table"><thead id="telemetry-head"></thead><tbody id="telemetry-rows"></tbody></table><p class="telemetry-empty" id="telemetry-empty">Recorded data will appear here.</p></div>
+      <div class="telemetry-pagination"><span id="telemetry-page">No records loaded</span><div><button class="button button-quiet" type="button" id="telemetry-previous">← Previous</button><button class="button button-quiet" type="button" id="telemetry-next">Next →</button></div></div>
+      <div class="telemetry-api"><span>Use this read API in your experiments</span><a id="telemetry-api-link" href="/api/telemetry/passengers" target="_blank" rel="noreferrer">/api/telemetry/passengers</a><small>JSON & CSV · Ticks are 100 ms · Text feedback is shared and included in exports</small></div>
+    </section>
+  <!-- JOURNEYS AND ACTIVITY: Preserve per-passenger feedback identities and a bounded recent event stream -->
     <div class="detail-grid">
-      <section class="card journeys-card" id="journeys" aria-labelledby="journeys-title"><div class="card-heading"><div><div class="eyebrow">PEOPLE IN MOTION</div><h2 id="journeys-title">Passenger journeys <span class="count-badge" id="people-total">0</span></h2></div><select id="journey-filter" aria-label="Filter passenger journeys"><option value="all">All journeys</option><option value="waiting">Waiting</option><option value="riding">On board</option><option value="arrived">Arrived</option></select></div><div class="table-scroll"><table><thead><tr><th>PASSENGER</th><th>JOURNEY</th><th>STATUS</th><th>WAIT TIME</th></tr></thead><tbody id="passenger-rows"></tbody></table><div class="empty-state" id="empty-state"><span aria-hidden="true">↗</span><h3>A building full of possibilities.</h3><p>Add your first passenger or try a busy morning.</p></div></div><div class="table-footer" id="table-footer">Passenger journeys update live.</div></section>
-      <section class="card activity-card" id="activity" aria-labelledby="activity-title"><div class="card-heading"><div><div class="eyebrow">AS IT HAPPENS</div><h2 id="activity-title">Live activity</h2></div><span class="live-label"><i class="status-dot"></i> LIVE</span></div><ol id="event-list" class="event-list"></ol><div class="activity-footer"><span class="mono" id="runtime-clock">00:00</span><span>Simulation time</span></div></section>
+      <section class="card journeys-card" id="journeys" aria-labelledby="journeys-title"><div class="card-heading"><div><h2 id="journeys-title">Passenger journeys <span class="count-badge" id="people-total">0</span></h2></div><select id="journey-filter" aria-label="Filter passenger journeys"><option value="all">All journeys</option><option value="waiting">Waiting</option><option value="riding">On board</option><option value="arrived">Arrived</option><option value="scheduled">Scheduled</option><option value="cancelled">Cancelled</option></select></div><div class="table-scroll"><table><thead><tr><th>PASSENGER</th><th>JOURNEY</th><th>STATUS</th><th>WAIT TIME</th><th>FEEDBACK</th></tr></thead><tbody id="passenger-rows"></tbody></table><div class="empty-state" id="empty-state"><span aria-hidden="true">↗</span><h3>No passengers</h3><p>Add a passenger or run a traffic scenario.</p></div></div><div class="table-footer" id="table-footer">Passenger journeys update live.</div></section>
+      <section class="card activity-card" id="activity" aria-labelledby="activity-title"><div class="card-heading"><div><h2 id="activity-title">Live activity</h2></div><span class="live-label"><i class="status-dot"></i> LIVE</span></div><ol id="event-list" class="event-list"></ol><div class="activity-footer"><span class="mono" id="runtime-clock">00:00</span><span>Simulation time</span></div></section>
     </div>
-    <footer class="page-footer"><span>Built to explore. Designed to keep moving.</span><span>agenticAI <i>·</i> Elevator Lab <i>·</i> C runtime / Web interface</span></footer>
+  <!-- DIAGRAM LINKS: Make both the live sequence and historical architecture directly discoverable -->
+    <nav class="diagram-shortcuts" aria-label="Dashboard diagrams"><span>DIAGNOSTICS</span><a href="#live-sequence">Current run sequence <span aria-hidden="true">↗</span></a><a href="#evolution">System evolution <span aria-hidden="true">↗</span></a></nav>
+  <!-- LIVE SEQUENCE: Pausing this view does not pause the C simulation; text and SVG alternatives are provided -->
+    <section class="card live-sequence-card" id="live-sequence" aria-labelledby="live-sequence-title">
+      <div class="card-heading"><div><h2 id="live-sequence-title">Current run sequence</h2></div><span class="pill" id="sequence-status" role="status">Waiting for runtime</span></div>
+      <div class="sequence-toolbar"><p id="sequence-progress">Waiting for the current experiment.</p><div><button type="button" class="button button-quiet" id="sequence-pause" data-local-control="true" aria-pressed="false">Pause diagram</button><button type="button" class="button button-quiet" id="sequence-download" data-local-control="true" data-unavailable="true">Download SVG ↓</button><a href="#evolution">Architecture & history ↗</a></div></div>
+      <div id="sequence-scroll" class="sequence-scroll" tabindex="0" role="region" aria-label="Live sequence diagram; scroll to explore"><div id="sequence-canvas"></div></div>
+      <div class="sequence-caption"><span id="sequence-window">Recent runtime interactions appear here.</span><span>Time flows downward · Scroll sideways to see all five participants · Pause freezes the view only</span></div>
+      <details class="sequence-text"><summary>Read interactions as text</summary><ol id="sequence-events"></ol></details>
+    </section>
+  <!-- EVOLUTION: Load the append-only stage catalog and provide filterable diagram/source previews -->
+    <section class="card evolution-card" id="evolution" aria-labelledby="evolution-title">
+      <div class="card-heading"><div><h2 id="evolution-title">System evolution</h2></div><span class="pill" id="evolution-count">Loading the timeline</span></div>
+      <p class="evolution-intro">Review source modules, dependencies and runtime sequences for each implementation stage. Download the diagrams, sources and stage notes.</p>
+      <p class="evolution-error" id="evolution-error" role="alert" hidden></p>
+      <div class="evolution-layout"><nav class="evolution-timeline" aria-label="System evolution stages"><ol id="evolution-stages"></ol></nav>
+        <div class="evolution-content"><div class="evolution-stage-heading"><div><span class="eyebrow" id="evolution-stage-label">IMPLEMENTATION STAGE</span><h3 id="evolution-stage-title">Loading stage…</h3></div><span class="evolution-date" id="evolution-stage-date"></span></div><p id="evolution-stage-summary" class="evolution-summary"></p>
+          <div class="evolution-toolbar"><div class="evolution-filters" role="group" aria-label="Filter evolution diagrams"><button type="button" data-local-control="true" data-diagram-filter="all" aria-pressed="true">All diagrams</button><button type="button" data-local-control="true" data-diagram-filter="architecture" aria-pressed="false">Architecture</button><button type="button" data-local-control="true" data-diagram-filter="sequence" aria-pressed="false">Sequences</button></div><a id="evolution-stage-notes" href="/evolution/catalog.json" download>Stage notes ↓</a></div>
+          <div id="evolution-diagrams" class="evolution-diagrams" aria-live="polite"></div>
+        </div>
+      </div>
+      <div class="evolution-footer"><span>Module architecture + runtime sequences at every stage.</span><span>Original C runtime · Append-only history · SVG & Mermaid exports</span></div>
+    </section>
+    <footer class="page-footer"><span>Elevator simulator · Autoevolution</span><span>Metriczone <i>·</i> Elevator Lab <i>·</i> C runtime / Embedded SQLite</span></footer>
   </main>
   <div class="toast" id="toast" role="status" hidden></div>
+  <!-- DIAGRAM DIALOG: Native modal behavior supplies focus handling and Escape dismissal -->
+  <dialog id="diagram-dialog" aria-labelledby="diagram-dialog-title"><div class="diagram-dialog-header"><div><span class="eyebrow" id="diagram-dialog-stage">SYSTEM EVOLUTION</span><h2 id="diagram-dialog-title">Diagram</h2></div><button type="button" class="button button-quiet" id="close-diagram" data-local-control="true" aria-label="Close diagram">Close ×</button></div><div class="diagram-zoom-controls" role="group" aria-label="Diagram zoom"><button type="button" class="button button-quiet" id="diagram-zoom-out" data-local-control="true" aria-label="Zoom out">−</button><span id="diagram-zoom-level" aria-live="polite">100%</span><button type="button" class="button button-quiet" id="diagram-zoom-in" data-local-control="true" aria-label="Zoom in">+</button><button type="button" class="button button-quiet" id="diagram-fit" data-local-control="true">Fit to width</button><span class="diagram-scroll-hint">Scroll to explore the full diagram</span></div><div id="diagram-viewport" class="diagram-viewport"><img id="diagram-full-image" alt=""></div></dialog>
+  <!-- FEEDBACK DIALOG: Hidden run and passenger IDs preserve identity if another visitor resets the simulator -->
+  <dialog id="feedback-dialog" aria-labelledby="feedback-title"><form id="feedback-form"><h2 id="feedback-title">Passenger feedback</h2><p id="feedback-passenger"></p><input type="hidden" id="feedback-run"><input type="hidden" id="feedback-person"><label for="feedback-text">Passenger feedback</label><textarea id="feedback-text" rows="5" maxlength="2000" placeholder="Describe the waiting time, ride or dispatch behavior…" required></textarea><small id="feedback-byte-count">0 / 2000 UTF-8 bytes</small><label for="feedback-rating">Rating <span>(optional)</span></label><select id="feedback-rating"><option value="">No rating</option><option value="1">1 · Very poor</option><option value="2">2 · Poor</option><option value="3">3 · Okay</option><option value="4">4 · Good</option><option value="5">5 · Excellent</option></select><p class="feedback-sharing">Saved with this passenger and experiment, including after reset. Visible to other visitors and included in data exports.</p><p id="feedback-error" class="form-error" role="alert" hidden></p><div class="feedback-actions"><button class="button button-quiet" type="button" id="cancel-feedback">Cancel</button><button class="button button-dark" type="submit" id="save-feedback">Save feedback ↗</button></div></form></dialog>
 </body>
 </html>

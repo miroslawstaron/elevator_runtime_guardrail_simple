@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "stages": [
+    {
+      "id": "01",
+      "slug": "before",
+      "file": "01-before.md",
+      "title": "The terminal baseline",
+      "date": "2026-10-20",
+      "summary": "One C process handles keyboard input, ASCII rendering, the elevator state machine and runtime guardrails. Requests share a single set of floor buttons."
+    },
+    {
+      "id": "02",
+      "slug": "after",
+      "file": "02-after.md",
+      "title": "A web interface, a C runtime",
+      "date": "2026-10-20",
+      "summary": "The browser adds animated floors, cabin controls and passenger journeys. A C HTTP server and passenger dispatcher handle shared trips, capacity and intermediate stops."
+    },
+    {
+      "id": "03",
+      "slug": "public",
+      "file": "03-public-access.md",
+      "title": "A door to the internet",
+      "date": "2026-10-20",
+      "summary": "An outbound Cloudflare tunnel exposes the C service through public HTTPS. The backend accepts the exact configured public hostname and Origin, with C running on port 8099."
+    },
+    {
+      "id": "04",
+      "slug": "telemetry",
+      "file": "04-telemetry.md",
+      "title": "Experiments that stay with you",
+      "date": "2026-10-20",
+      "summary": "Embedded SQLite retains 10 Hz elevator samples, events, passenger timings and textual feedback. Named runs, historical queries and JSON/CSV exports support experimentation."
+    },
+    {
+      "id": "05",
+      "slug": "network",
+      "file": "05-network-access.md",
+      "title": "Direct network access",
+      "date": "2026-10-20",
+      "summary": "Explicit IPv4 binding and hostname aliases allow direct access on port 8099 alongside the HTTPS tunnel. Host, port and Origin checks remain in the C server."
+    },
+    {
+      "id": "06",
+      "slug": "evolution",
+      "file": "06-evolution-viewer.md",
+      "title": "The system tells its story",
+      "date": "2026-10-20",
+      "summary": "An evolution timeline brings every stage's architecture and sequence diagrams into the web interface. A shared catalog, generated assets and freshness checks keep future steps traceable."
+    },
+    {
+      "id": "07",
+      "slug": "live-sequence",
+      "file": "07-live-sequence-and-export.md",
+      "title": "Watch the current run unfold",
+      "date": "2026-10-20",
+      "summary": "Dashboard shortcuts expose the diagram history, a live sequence follows the current simulation run, and combined JSON/CSV exports include every recorded data kind."
+    },
+    {
+      "id": "08",
+      "slug": "metriczone",
+      "diagramTheme": "metriczone",
+      "file": "08-metriczone-identity.md",
+      "title": "The Metriczone measurement lab",
+      "date": "2026-10-20",
+      "summary": "The supplied Metriczone logo shapes a deep teal and white interface, geometric typography and measurement-focused dashboard. Controls, live diagrams and experimentation tools share the new identity."
+    },
+    {
+      "id": "09",
+      "slug": "comments",
+      "diagramTheme": "metriczone",
+      "file": "09-commenting-conventions.md",
+      "title": "Readable code, traceable behavior",
+      "date": "2026-10-20",
+      "summary": "Comments follow the guardrail module's conventions across the authored C backend, web interface, tools and tests. Module purpose, function contracts and inline explanations document the existing behavior."
+    },
+    {
+      "id": "10",
+      "slug": "traffic-analysis",
+      "diagramTheme": "metriczone",
+      "file": "10-traffic-scenarios-and-analysis.md",
+      "title": "Traffic you can repeat, steering you can improve",
+      "date": "2026-10-20",
+      "summary": "Runnable morning, afternoon, occasional, VIP and custom traffic scenarios use a C arrival scheduler. Selected-run telemetry analysis explains measured bottlenecks and suggests steering experiments."
+    },
+    {
+      "id": "11",
+      "slug": "elevator-first",
+      "diagramTheme": "metriczone",
+      "file": "11-elevator-first-interface.md",
+      "title": "Elevator-first interface and autoevolution workflow",
+      "date": "2026-10-20",
+      "summary": "The elevator and controls precede scenarios and telemetry. Direct wording explains simulation, steering analysis and the autoevolution workflow; diagnostics and stage history remain available."
+    },
+    {
+      "id": "12",
+      "slug": "module-architecture",
+      "diagramTheme": "metriczone",
+      "file": "12-module-architecture.md",
+      "title": "Source modules and dependencies",
+      "date": "2026-10-20",
+      "summary": "Architecture diagrams show stage-specific C files, public headers, web components and tooling dependencies. Current C, web and deployment modules have separate views; sequences retain runtime behavior."
+    }
+  ]
+}

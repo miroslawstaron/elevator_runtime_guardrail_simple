@@ -5,29 +5,30 @@ Implemented on 2026-10-20. Compare with [the baseline](01-before.md). Open [the 
 ## Architecture
 
 ```mermaid
-flowchart TB
-    Operator[Operator] --> Browser
-    subgraph Browser[Web browser]
-        UI[index.html and app.css<br/>Logo, building, controls, journeys]
-        JS[app.js<br/>Commands, polling and rendering]
-        UI <--> JS
+flowchart LR
+    subgraph Web[Browser modules]
+        Page["web/index.html<br/>Dashboard structure and controls"]
+        App["web/app.js<br/>Shared state, commands and rendering"]
+        Styles["web/app.css<br/>Layout and component styles"]
+        Page -->|loads| App
+        Page -->|loads| Styles
+        Logo["web/assets/agenticai-logo.png<br/>Supplied logo"]
+        Page -->|references| Logo
     end
-    subgraph Backend[Single C process on loopback]
-        HTTP[web_server.c<br/>Nonblocking HTTP and monotonic 100 ms clock]
-        Sim[simulation.c<br/>Passenger lifecycle, capacity and directional dispatch]
-        Core[elevator.c<br/>Existing state machine unchanged]
-        Guards[guardrails.c<br/>Existing enforcement unchanged]
-        Memory[(Shared in-memory simulation<br/>Passengers, requests, events, elevator)]
-        HTTP -->|Tick independently of browsers| Sim
-        Sim --> Core
-        Sim --> Guards
-        Sim <--> Memory
-        Core <--> Memory
-        Guards <--> Memory
+    subgraph Backend[C backend modules]
+        HTTP["src/web_server.c<br/>HTTP routes, validation and clock<br/>Includes simulation.h"]
+        Sim["src/simulation.c<br/>include/simulation.h<br/>Passenger dispatch, capacity and state JSON"]
+        Elevator["src/elevator.c<br/>include/elevator.h<br/>Elevator types and state-machine API"]
+        Guard["src/guardrails.c<br/>include/guardrails.h<br/>GuardrailStatus and safety API"]
+        HTTP -->|uses simulation.h API| Sim
+        Sim -->|uses elevator.h API| Elevator
+        Sim -->|uses guardrails.h API| Guard
+        Guard -->|uses Elevator type and helpers| Elevator
     end
-    JS -->|GET /api/state and form-encoded POST commands| HTTP
-    HTTP -->|Authoritative JSON snapshots and local assets| JS
-    Assets[web/assets/agenticai-logo.png<br/>Supplied original logo] --> HTTP
+    App -->|HTTP state and command API| HTTP
+    Build["build.ps1 / Makefile / CMakeLists.txt<br/>C executable build definitions"]
+    Build -.->|compiles and links| HTTP
+    Build -.->|compiles and links| Sim
 ```
 
 ## Sequence: add passengers and complete a shared trip

@@ -1,0 +1,203 @@
+/****************************************
+*
+* Elevator Lab -- Metriczone Visual Identity and Responsive Branding
+*
+* SPDX-License-Identifier: MIT
+*
+******************************************/
+
+/* Metriczone identity. Component structure and responsive geometry live in their own stylesheets. */
+
+/* BRAND TOKENS: Anchor the current identity in the supplied logo teal and cool surfaces */
+:root {
+  --brand: #003e4d;
+  --brand-mid: #196575;
+  --brand-soft: #e8f3f4;
+  --brand-line: #d5e4e7;
+  --navy: var(--brand);
+  --ink: #153e48;
+  --muted: #526d76;
+  --paper: #f3f7f8;
+  --line: var(--brand-line);
+  --lime: #c5e6e9;
+  --mint: var(--brand-soft);
+  font-family: "Segoe UI", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+body { background: var(--paper); }
+
+/* BRAND PRESENTATION: Preserve the original logo proportions and keep navigation scrollable */
+.sidebar { width: 238px; padding: 12px 17px 20px; overflow-y: auto; scrollbar-width: thin; }
+.brand { width: 190px; height: 190px; margin: 0 auto 15px; flex-shrink: 0; }
+.brand img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.workspace-label { font-size: 9px; color: var(--muted); letter-spacing: 1.5px; }
+.nav-link { color: #526c75; font-size: 11px; font-weight: 500; border-radius: 9px; padding-block: 11px; gap: 8px; }
+.nav-link.active { background: var(--brand); color: white; }
+.nav-link.active .nav-dot { background: #a7dce1; }
+.nav-link:hover { background: var(--brand-soft); color: var(--brand); }
+.sidebar-note { margin: 28px 4px 22px; padding: 20px 16px; background: #f0f7f8; border-color: var(--line); border-radius: 14px; }
+.brand-gauge { width: 47px; height: 37px; color: var(--brand); }
+.sidebar-note h3 { font-size: 21px; font-weight: 750; letter-spacing: -.6px; line-height: 1.3; }
+.sidebar-note p { color: var(--muted); }
+.runtime-tag { color: var(--brand-mid); font-size: 7px; letter-spacing: .7px; }
+.sidebar-footer { color: var(--brand); margin-top: auto; }
+.sidebar-footer>.mono { background: var(--brand); color: white; border-radius: 8px; }
+main { margin-left: 238px; }
+.topbar { height: 70px; color: var(--muted); }
+.breadcrumb strong { font-weight: 650; }
+.connection { color: var(--brand-mid); }
+.status-dot { background: #26828b; }
+
+/* TYPOGRAPHY: Use geometric sans-serif headings and a measurement-oriented introduction */
+.page-heading { padding-block: 35px 30px; align-items: center; }
+.page-heading .eyebrow { font-size: 9px; color: var(--brand-mid); font-weight: 650; letter-spacing: 1.4px; }
+.little-line { width: 25px; height: 3px; border-radius: 3px; background: #277e8c; }
+h1 { font-family: inherit; font-weight: 750; font-size: clamp(31px, 3vw, 45px); letter-spacing: -1.8px; line-height: 1.14; margin-block: 14px 12px; }
+.page-heading p { color: var(--muted); font-size: 12px; line-height: 1.7; max-width: 500px; }
+.eyebrow { color: var(--brand-mid); font-weight: 650; }
+
+/* PRIMARY ACTIONS: Apply the brand to standard actions while leaving emergency semantics distinct */
+.button { border-radius: 8px; min-height: 39px; font-weight: 600; }
+.button-dark, .button-lime { background: var(--brand); color: white; border-color: var(--brand); }
+.button-quiet { color: var(--brand); border-color: #ccdfe3; }
+.button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline-color: #368c9e; }
+.diagram-shortcuts { background: white; border-color: var(--line); border-radius: 10px; padding-block: 15px; }
+.diagram-shortcuts>span { color: var(--muted); }
+.diagram-shortcuts a { font-size: 11px; font-weight: 600; text-decoration-color: #9fc6cd; text-underline-offset: 4px; }
+
+/* MEASUREMENT IDENTITY: Use consistent icons, strong values and teal card accents */
+.metrics { gap: 18px; }
+.metric { min-height: 110px; border-radius: 13px; border-color: var(--line); border-top: 3px solid var(--brand); padding: 22px 18px; }
+.metric-icon { width: 42px; height: 45px; border-radius: 11px; color: var(--brand); background: var(--brand-soft); }
+.metric-icon svg { width: 26px; height: 26px; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.metric strong { font-size: 31px; font-weight: 750; letter-spacing: -1.2px; }
+.metric-label { color: var(--muted); font-size: 10px; }
+.metric-note { color: #597680; font-size: 9px; }
+.card { border-color: var(--line); border-radius: 14px; box-shadow: 0 4px 16px #003e4d04; }
+.card-heading h2 { font-size: 18px; font-weight: 700; letter-spacing: -.4px; }
+.pill { color: #165769; background: var(--brand-soft); border-color: #d0e5e8; font-weight: 600; }
+
+/* ELEVATOR IDENTITY: Recolor the building, cabin and active floor controls as one system */
+.building { border-color: #cddfe4; background: #f8fbfc; border-radius: 8px; }
+.building-meta, .floor-number, .building-footer { color: #526f79; }
+.floor-number small { color: #68838c; }
+.floor-empty { color: #708993; }
+.floor-row { border-bottom-color: #dde9ec; }
+.floor-row.current { background: #e5f2f5; }
+.shaft { background: #e1ecef; border-color: #c9dce2; background-image: repeating-linear-gradient(0deg,transparent,transparent 47px,#c7dbe1 47px,#c7dbe1 48px); }
+.shaft:after { border-color: #adcbd3; }
+.elevator-car { background: var(--brand); border: 1px solid var(--brand); border-radius: 6px; box-shadow: 0 2px 7px #003e4d24; }
+.car-door { background: var(--brand); }
+.left-door { border-color: #226373; }
+.car-front { color: white; }
+.car-interior { background: #d4edf0; color: var(--brand); }
+.floor-call { border-color: #c3dbe0; color: var(--brand-mid); }
+.floor-call.requested, .floor-button.requested { background: var(--brand); color: white; border-color: var(--brand); }
+.floor-button.current { box-shadow: inset 0 -3px #247d8d; }
+.legend-dot { background: #196575; }
+.lime-dot { background: var(--brand); }
+.floor-display { background: #ecf5f7; border-color: #d6e8ec; border-radius: 9px; }
+.floor-display strong { color: var(--brand); font-weight: 750; }
+.destination { color: var(--brand-mid); }
+.destination>span:last-child, .panel-label, .control-hint { color: #597680; }
+input, select, #feedback-text { background: #fbfdfd; border-color: #cddfe3; border-radius: 7px; color: var(--ink); }
+input::placeholder { color: #718892; }
+label { color: #355c68; font-weight: 600; }
+.empty-state h3 { font-family: inherit; font-weight: 650; color: var(--brand-mid); }
+th { color: #526e78; background: #f1f7f8; border-color: #dde9ec; }
+td { color: #4d6c76; border-color: #e7eff1; }
+.journey-status.arrived, .feedback-button { background: var(--brand-soft); color: #146373; border-color: #cce2e7; }
+
+/* EXPERIMENT SURFACES: Carry the palette through summaries, filters and recorded results */
+.telemetry-metrics { background: #edf5f7; border-color: #d6e7eb; border-radius: 11px; }
+.telemetry-metrics strong { color: var(--brand); font-weight: 750; }
+.telemetry-metrics span, .telemetry-metrics small { color: #526d76; }
+.telemetry-filter, .telemetry-api, .evolution-timeline { background: #f4f9fa; }
+
+/* DOCUMENTATION IDENTITY: Match current viewer controls without recoloring historical SVG snapshots */
+.evolution-step { color: #4e6e77; border-radius: 9px; }
+.evolution-step small { color: #597680; }
+.evolution-step[aria-current="step"] { color: var(--brand); border-color: #bfdce3; background: #e4f1f4; }
+.evolution-step[aria-current="step"] .evolution-step-number { background: var(--brand); border-color: var(--brand); color: white; }
+.evolution-stage-heading h3, .diagram-dialog-header h2, #feedback-dialog h2 { font-family: inherit; font-weight: 700; letter-spacing: -.7px; }
+.evolution-summary, .evolution-footer, .evolution-date { color: #526f79; }
+.evolution-filters { background: #edf5f7; border-color: #cfe2e7; }
+.evolution-filters button { color: #4e6e77; }
+.evolution-kind { color: var(--brand-mid); background: #e5f2f4; }
+.evolution-diagram { border-color: var(--line); border-radius: 9px; }
+.evolution-diagram-footer { background: #f6fafb; }
+.sequence-toolbar p, .sequence-text, .sequence-text time, .sequence-caption { color: #526d76; }
+.sequence-scroll { background: #f8fbfc; }
+.export-scope-note, .telemetry-results-heading, .telemetry-pagination, .telemetry-api, .telemetry-api small { color: #526d76; }
+.page-footer { color: #526d76; padding-block: 27px; }
+.brand-motto { color: var(--brand); font-weight: 700; letter-spacing: -.15px; }
+
+/* RESPONSIVE BRANDING: Adjust the current identity alongside the base component breakpoints */
+@media(min-width:1550px) { .metric-note { font-size: 10px; } }
+@media(max-width:1250px) {
+  .sidebar { width: 204px; padding-inline: 12px; }
+  .brand { width: 176px; height: 176px; }
+  main { margin-left: 204px; }
+  .metric { padding-inline: 14px; }
+  .page-heading { align-items: flex-start; }
+  .heading-actions { flex-direction: column; }
+}
+@media(min-width:761px) and (max-width:980px) {
+  .sidebar { width: 112px; padding: 12px 7px; }
+  .brand { width: 98px; height: 98px; margin-bottom: 25px; }
+  .nav-link { font-size: 0; }
+  .nav-link.active { padding: 12px 6px; }
+  main { margin-left: 112px; }
+  .page-heading p { max-width: 360px; }
+  .metric { min-height: 96px; }
+}
+@media(max-width:760px) {
+  .sidebar { width: 100%; height: 110px; padding: 0 18px; overflow: visible; }
+  .brand { width: 108px; height: 108px; margin: 0; align-self: center; }
+  .nav-link.active { font-size: 12px; border-radius: 9px; padding: 9px 12px; }
+  main { margin-left: 0; }
+  .topbar { height: 48px; }
+  .page-heading { padding-block: 25px; }
+  .page-heading .eyebrow { font-size: 8px; letter-spacing: 1px; flex-wrap: wrap; }
+  h1 { font-size: clamp(30px, 7.6vw, 38px); letter-spacing: -1.2px; }
+  .page-heading p { font-size: 12px; }
+  .diagram-shortcuts { gap: 13px; padding: 16px; }
+  .metrics { gap: 8px; }
+  .metric { min-height: 91px; padding: 13px 10px; border-radius: 10px; }
+  .metric-label { font-size: 9px; }
+  .metric strong { font-size: 27px; }
+  .card-heading h2 { font-size: 17px; }
+  .heading-actions { flex-direction: row; flex-wrap: wrap; }
+}
+
+/* WORKFLOW: Keep the elevator above scenarios and telemetry in document and reading order. */
+.brand { width: 136px; height: 136px; margin-bottom: 12px; }
+.topbar { height: 52px; }
+.page-heading { padding-block: 20px 16px; }
+h1 { font-size: clamp(28px, 2.6vw, 36px); margin-block: 9px 8px; letter-spacing: -1px; }
+.page-heading p { max-width: 620px; }
+.workflow-links { display: flex; flex-wrap: wrap; gap: 9px 22px; margin-bottom: 18px; font-size: 12px; }
+.workflow-links a { color: var(--brand-mid); padding-block: 5px; text-decoration: underline; text-decoration-color: #a6cbd4; text-underline-offset: 4px; }
+.metrics { gap: 14px; margin-bottom: 18px; }
+.metric { min-height: 86px; padding-block: 16px; border-top-width: 1px; }
+.metric-icon { width: 32px; height: 32px; }
+.simulation-grid { margin-bottom: 24px; scroll-margin-top: 18px; }
+.card-heading h2 { margin-top: 0; }
+.sidebar-note { padding: 14px 10px; border: 0; background: transparent; margin-top: 20px; }
+.sidebar-note h3 { font-size: 13px; letter-spacing: 0; line-height: 1.5; }
+.sidebar-note p { font-size: 11px; line-height: 1.8; }
+.sidebar-note .runtime-tag { margin-top: 14px; }
+
+/* COMPACT WORKFLOW: Preserve task links when the existing sidebar collapses on phones. */
+@media(max-width:980px) and (min-width:761px) {
+  .brand { width: 78px; height: 78px; }
+}
+@media(max-width:760px) {
+  .sidebar { height: 72px; }
+  .brand { width: 76px; height: 72px; margin: 0; }
+  .topbar { height: 42px; }
+  .page-heading { padding-block: 17px 12px; }
+  .workflow-links { gap: 8px 18px; font-size: 11px; margin-bottom: 14px; }
+  .metric { min-height: 78px; padding-block: 12px; }
+  .simulation-grid { margin-bottom: 18px; }
+}

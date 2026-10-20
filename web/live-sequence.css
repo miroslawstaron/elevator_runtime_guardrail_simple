@@ -1,0 +1,22 @@
+/****************************************
+*
+* Elevator Lab -- Live Sequence and Export Layout Styles
+*
+* SPDX-License-Identifier: MIT
+*
+******************************************/
+
+
+/* DISCOVERABILITY: Expose current-run and historical diagrams from the main dashboard */
+.diagram-shortcuts{display:flex;align-items:center;flex-wrap:wrap;gap:12px 22px;margin:-7px 0 24px;padding:14px 18px;background:#e4f1f3;border:1px solid #d0e2e6;border-radius:7px}.diagram-shortcuts>span{font:9px Consolas,monospace;letter-spacing:1px;color:#749095}.diagram-shortcuts a{font-size:12px;color:var(--navy);text-decoration:underline;text-underline-offset:3px}
+/* LIVE SEQUENCE: Separate progress metadata and local pause/download actions from the chart */
+.live-sequence-card{margin-top:24px;scroll-margin-top:20px}.sequence-toolbar{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:16px 24px}.sequence-toolbar p{font:11px/1.8 Consolas,monospace;color:#5b7a80}.sequence-toolbar>div{display:flex;gap:8px;align-items:center;flex-wrap:wrap;flex-shrink:0}.sequence-toolbar a{font-size:10px;color:var(--navy);text-decoration:underline;margin-left:6px}
+/* CHART VIEWPORT: Retain readable lane widths and scroll locally on narrow displays */
+.sequence-scroll{max-height:520px;overflow:auto;background:#f8fbfc;border-block:1px solid var(--line)}#sequence-canvas svg{display:block;width:100%;min-width:920px;height:auto}.sequence-caption{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:13px 24px;font-size:10px;color:#7d969b}
+/* ACCESSIBLE ALTERNATIVE: Present the same recent interactions as an expandable text list */
+.sequence-text{border-top:1px solid var(--line);padding:14px 24px;font-size:11px;color:#5b7d84}.sequence-text summary{cursor:pointer}.sequence-text ol{margin:15px 0 0 20px}.sequence-text li{padding:5px;line-height:1.7;overflow-wrap:anywhere}.sequence-text time{font:10px Consolas,monospace;color:#80999e;margin-right:12px}.pill.sequence-delayed{color:#a45244;background:#fff2ec}
+/* EXPORT SCOPE: Keep the selected-dataset/all-types choice next to both download actions */
+.export-controls{align-items:flex-end;flex-wrap:wrap}.export-controls label{font-size:10px}.export-controls select{height:36px;font-size:11px}.export-scope-note{margin:-7px 24px 16px;font-size:10px;line-height:1.8;color:#769096}
+
+/* PHONE LAYOUT: Stack sequence tools and allow export scope to occupy its own row */
+@media(max-width:760px){.diagram-shortcuts{margin-top:0;align-items:flex-start;flex-direction:column;gap:12px}.live-sequence-card .card-heading{flex-wrap:wrap;gap:12px}.sequence-toolbar{align-items:flex-start;flex-direction:column;padding:15px 18px}.sequence-toolbar>div{flex-shrink:1}.sequence-toolbar .button{font-size:10px;padding:8px 10px}.sequence-caption{padding:13px 18px}.sequence-text{padding:14px 18px}.export-scope-note{margin-inline:18px}.telemetry-results-heading .export-controls{flex-direction:row;flex-wrap:wrap}.export-controls>div{width:100%}.export-controls select{width:100%}}

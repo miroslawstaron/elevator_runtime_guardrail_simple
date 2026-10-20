@@ -1,0 +1,18 @@
+sequenceDiagram
+    actor Operator
+    participant UI as Telemetry explorer
+    participant HTTP as C read API
+    participant DB as Existing SQLite history
+    participant Rules as Browser recommendation rules
+    Operator->>UI: Select live or archived experiment
+    Operator->>UI: Click Analyze telemetry and suggest improvements
+    UI->>HTTP: GET /api/telemetry/analysis?runId=selected
+    HTTP->>DB: Aggregate whole-run passengers, samples and feedback
+    Note over HTTP,DB: Exclude future arrivals from demand, boarded waits and waiting ages remain distinct.
+    DB-->>HTTP: Metrics at the recorded tick, including data quality
+    HTTP-->>UI: Typed metrics and experiment identity
+    UI->>Rules: Apply documented evidence thresholds
+    Rules-->>UI: Suggested steering experiments with supporting measurements
+    UI-->>Operator: Snapshot report, mark incomplete/live evidence preliminary
+    Note over UI,Rules: Switching experiments invalidates old reports and stale responses.
+    Note over Operator,DB: Advice never changes steering. Replay the same traffic to benchmark a candidate.

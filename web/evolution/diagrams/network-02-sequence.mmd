@@ -1,0 +1,17 @@
+sequenceDiagram
+    actor Visitor
+    participant Browser as Network browser
+    participant Firewall as Windows firewall
+    participant Server as C server on port 8099
+    participant Sim as C simulation
+    Visitor->>Browser: Open configured hostname or destination IP
+    Browser->>Firewall: Connect to TCP 8099
+    Firewall->>Server: Permit the configured executable and port
+    Server->>Server: Match destination IP or explicit hostname alias
+    Server-->>Browser: Web interface and local assets
+    Visitor->>Browser: Operate elevator or add feedback
+    Browser->>Server: POST with matching HTTP Origin
+    Server->>Server: Validate Host, port and Origin
+    Server->>Sim: Execute validated command
+    Sim-->>Browser: Authoritative JSON response
+    Note over Server: Arbitrary Host names and cross-origin commands are rejected.

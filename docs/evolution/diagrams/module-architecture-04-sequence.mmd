@@ -1,0 +1,18 @@
+sequenceDiagram
+    actor Operator
+    participant HTML as web/index.html
+    participant JS as web/analysis.js
+    participant HTTP as src/web_server.c
+    participant Store as src/telemetry.c
+    participant SQLite as vendor/sqlite/sqlite3.c
+    Operator->>HTML: Select a run and click Analyze telemetry
+    HTML->>JS: Dispatch button event
+    JS->>HTTP: GET /api/telemetry/analysis with runId
+    HTTP->>Store: telemetry_read via include/telemetry.h
+    Store->>SQLite: Prepare and execute fixed aggregate SQL
+    SQLite-->>Store: Recorded metrics for the selected run
+    Store-->>HTTP: Typed JSON dataset
+    HTTP-->>JS: Analysis response
+    JS->>JS: Apply recommendation rules
+    JS->>HTML: Render metrics, evidence and candidate changes
+    Note over HTML,JS: web/scenarios.css supplies the analysis report styles.

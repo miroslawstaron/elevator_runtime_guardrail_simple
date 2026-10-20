@@ -1,0 +1,37 @@
+/****************************************
+ * Elevator Lab -- Traffic Scenario and Analysis Layout
+ * SPDX-License-Identifier: MIT
+ ****************************************/
+/* COMPONENTS: Use the existing Metriczone palette and allow long results to wrap. */
+.scenario-card { margin-bottom:24px; padding:28px; scroll-margin-top:24px; }
+.scenario-card .card-heading { padding:0 0 20px; }
+.scenario-card a { color:#196575; font-size:13px; }
+.scenario-presets { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:10px; }
+.scenario-presets button { text-align:left; border:1px solid #d5e4e7; border-radius:8px; background:#f4f9fa; color:#153e48; padding:17px 14px; cursor:pointer; }
+.scenario-presets button[aria-pressed=true] { border-color:#196575; background:#e0f0f3; box-shadow:inset 0 0 0 1px #196575; }
+.scenario-presets strong,.scenario-presets span { display:block; }
+.scenario-presets span { margin-top:9px; font-size:12px; line-height:1.6; }
+#scenario-form>p,.scenario-footnote,#custom-scenario>p { font-size:13px; line-height:1.7; color:#536f79; }
+.scenario-fields { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; max-width:750px; }
+.scenario-card label { display:block; margin:0 0 7px; font-size:12px; color:#536f79; }
+.scenario-card input,.scenario-card select { width:100%; min-width:0; padding:10px; color:#153e48; background:white; border:1px solid #cbdde1; border-radius:5px; font:inherit; font-size:13px; }
+.scenario-flow { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)) auto; gap:10px; align-items:end; padding:14px 0; border-bottom:1px solid #d5e4e7; }
+.scenario-actions { display:flex; gap:20px; align-items:center; margin:24px 0; }
+.scenario-actions span { color:#536f79; font-size:12px; line-height:1.6; max-width:580px; }
+.scenario-live { display:flex; justify-content:space-between; gap:20px; align-items:center; padding:18px; background:#edf6f8; border-radius:8px; }
+.scenario-live p { font-size:13px; line-height:1.8; margin:0; }
+.scenario-live>div { display:flex; align-items:center; flex-wrap:wrap; gap:10px; }
+.scenario-live select { width:auto; }
+.scenario-footnote { margin:16px 0 0; }
+.analysis-panel { border:1px solid #cbdde1; background:#f4f9fa; border-radius:8px; padding:20px; margin:20px 0; }
+.analysis-heading { display:flex; justify-content:space-between; gap:16px; align-items:center; flex-wrap:wrap; }
+.analysis-heading h3 { margin:0; font-size:18px; }
+.analysis-panel p,.analysis-panel li { font-size:13px; line-height:1.8; color:#536f79; }
+.analysis-panel li { margin:12px 0; }
+.analysis-panel strong { color:#153e48; }
+.analysis-metrics { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }
+.analysis-metrics div { padding:12px; background:white; border-radius:5px; font-size:12px; color:#536f79; }
+.analysis-metrics strong { display:block; font-size:20px; margin-top:8px; }
+/* RESPONSIVE: Keep stream editing and recommendation evidence usable on narrow screens. */
+@media(max-width:1100px) { .scenario-presets { grid-template-columns:repeat(3,minmax(0,1fr)); } .scenario-flow { grid-template-columns:repeat(3,minmax(0,1fr)); } .scenario-live { align-items:flex-start; flex-direction:column; } }
+@media(max-width:600px) { .scenario-card { padding:18px; } .scenario-presets { grid-template-columns:repeat(2,minmax(0,1fr)); } .scenario-fields,.scenario-flow,.analysis-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); } .scenario-actions { align-items:flex-start; flex-direction:column; } .scenario-card .card-heading { gap:10px; flex-wrap:wrap; } .scenario-live>div { width:100%; } .scenario-live>div label { width:100%; } }

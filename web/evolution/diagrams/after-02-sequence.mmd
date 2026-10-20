@@ -1,0 +1,33 @@
+sequenceDiagram
+    actor Operator
+    participant Web as Browser
+    participant HTTP as C HTTP server
+    participant Sim as C passenger dispatcher
+    participant Core as Existing C state machine
+    participant Guards as Existing C guardrails
+    Operator->>Web: Name, origin, destination and group size
+    Web->>HTTP: POST /api/people (form encoded)
+    HTTP->>HTTP: Validate framing, host, origin and fields
+    HTTP->>Sim: simulation_add_people
+    Sim->>Sim: Atomically add WAITING passengers and events
+    HTTP-->>Web: Authoritative JSON state
+    loop Independent 100 ms monotonic C clock
+        HTTP->>Sim: simulation_tick
+        Sim->>Guards: Check and enforce
+        Sim->>Sim: Select nearest request along current direction
+        Sim->>Core: Set next stop and elevator_tick
+        opt Doors fully open at pickup floor
+            Sim->>Sim: Unload, then board matching direction up to 8 people
+            Note over Sim: WAITING becomes RIDING,<br/>destinations become cabin requests
+        end
+        opt Doors fully open at destination
+            Sim->>Sim: RIDING becomes ARRIVED, record completion
+        end
+        Sim->>Guards: Check and enforce updated state
+    end
+    loop Approximately every 120 ms after previous response
+        Web->>HTTP: GET /api/state
+        HTTP-->>Web: Position, people, requests, guardrails and events
+        Web->>Web: Animate cabin and render passenger journeys
+    end
+    Note over HTTP,Sim: Simulation continues with no browser connected.

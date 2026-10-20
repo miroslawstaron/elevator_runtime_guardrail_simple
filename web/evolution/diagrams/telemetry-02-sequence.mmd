@@ -1,0 +1,25 @@
+sequenceDiagram
+    actor Operator
+    participant Browser
+    participant HTTP as C HTTP server
+    participant Sim as C simulation
+    participant Recorder as C telemetry recorder
+    participant DB as Embedded SQLite
+    Operator->>Browser: Start named experiment
+    Browser->>HTTP: POST /api/experiments
+    HTTP->>Recorder: Archive previous run and create new run
+    Recorder->>DB: Transaction, retain all prior records
+    Recorder->>Sim: Initialize fresh elevator state
+    HTTP-->>Browser: New authoritative state and runId
+    loop Every 100 ms, independently of browsers
+        HTTP->>Sim: Advance one tick
+        HTTP->>Recorder: Capture current state, changed passengers, new events
+        Recorder->>DB: Atomic transaction with run and tick identity
+    end
+    Operator->>Browser: Select run, dataset and tick range
+    Browser->>HTTP: GET /api/telemetry/samples with filters
+    HTTP->>Recorder: Execute fixed query with bound parameters
+    Recorder->>DB: Read bounded page in tick order
+    DB-->>Browser: JSON rows, schema and pagination metadata
+    Browser->>HTTP: Fetch remaining pages for export
+    Browser->>Operator: Download filtered JSON or CSV

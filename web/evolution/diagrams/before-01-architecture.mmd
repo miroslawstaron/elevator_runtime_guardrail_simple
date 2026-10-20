@@ -1,0 +1,11 @@
+flowchart LR
+    subgraph Entry[Terminal application]
+        Main["src/main.c<br/>Terminal input, rendering and main loop"]
+    end
+    subgraph Modules[Core C modules]
+        Elevator["src/elevator.c<br/>include/elevator.h<br/>Elevator types and state-machine API"]
+        Guard["src/guardrails.c<br/>include/guardrails.h<br/>GuardrailStatus and safety API"]
+    end
+    Main -->|uses elevator.h API| Elevator
+    Main -->|uses guardrails.h API| Guard
+    Guard -->|uses Elevator type and helpers| Elevator

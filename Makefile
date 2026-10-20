@@ -1,3 +1,11 @@
+# ****************************************
+#
+# Elevator Lab -- Portable Build Targets
+#
+# SPDX-License-Identifier: MIT
+#
+# ****************************************
+
 # Use platform-appropriate shell
 ifeq ($(OS),Windows_NT)
   SHELL = cmd.exe
@@ -6,7 +14,7 @@ else
 endif
 
 CC = gcc
-CFLAGS = -Wall -Wextra -std=c99 -g -Iinclude
+CFLAGS = -Wall -Wextra -std=c99 -g -Iinclude -Ivendor/sqlite
 
 # Directories
 SRC_DIR = src
@@ -22,17 +30,28 @@ SRC_OBJECTS = $(BUILD_DIR)/elevator.o $(BUILD_DIR)/guardrails.o
 .DEFAULT_GOAL := all
 WEB_EXECUTABLE = $(BIN_DIR)/elevator_web
 SIM_TEST_EXECUTABLE = $(BIN_DIR)/test_simulation
+TELEMETRY_TEST_EXECUTABLE = $(BIN_DIR)/test_telemetry
 ifeq ($(OS),Windows_NT)
   WEB_LIBS = -lws2_32
 else
   WEB_LIBS =
 endif
 
-$(WEB_EXECUTABLE): $(SRC_OBJECTS) $(BUILD_DIR)/simulation.o $(BUILD_DIR)/web_server.o
+# WEB RUNTIME: Link the original core, passenger adapter, recorder and HTTP service into C
+$(WEB_EXECUTABLE): $(SRC_OBJECTS) $(BUILD_DIR)/simulation.o $(BUILD_DIR)/telemetry.o $(BUILD_DIR)/web_server.o $(BUILD_DIR)/sqlite3.o
 	$(CC) $(CFLAGS) -o $@ $^ $(WEB_LIBS)
 
+# PASSENGER VERIFICATION: Test the adapter without an HTTP server or browser dependency
 $(SIM_TEST_EXECUTABLE): $(SRC_OBJECTS) $(BUILD_DIR)/simulation.o $(BUILD_DIR)/test_simulation.o
 	$(CC) $(CFLAGS) -o $@ $^
+
+# RECORDER VERIFICATION: Link real embedded SQLite for persistence and recovery checks
+$(TELEMETRY_TEST_EXECUTABLE): $(SRC_OBJECTS) $(BUILD_DIR)/simulation.o $(BUILD_DIR)/telemetry.o $(BUILD_DIR)/test_telemetry.o $(BUILD_DIR)/sqlite3.o
+	$(CC) $(CFLAGS) -o $@ $^
+
+.PHONY: test-telemetry
+test-telemetry: $(TELEMETRY_TEST_EXECUTABLE)
+	./$(TELEMETRY_TEST_EXECUTABLE)
 
 .PHONY: web run-web test-simulation
 web: $(WEB_EXECUTABLE)
@@ -42,6 +61,10 @@ test-simulation: $(SIM_TEST_EXECUTABLE)
 	./$(SIM_TEST_EXECUTABLE)
 
 $(BUILD_DIR)/simulation.o $(BUILD_DIR)/web_server.o $(BUILD_DIR)/test_simulation.o: include/simulation.h include/elevator.h include/guardrails.h
+$(BUILD_DIR)/telemetry.o $(BUILD_DIR)/web_server.o $(BUILD_DIR)/test_telemetry.o: include/telemetry.h
+# THIRD-PARTY BUILD: Compile SQLite separately with extension loading disabled
+$(BUILD_DIR)/sqlite3.o: vendor/sqlite/sqlite3.c vendor/sqlite/sqlite3.h | $(BUILD_DIR)
+	$(CC) -std=c99 -O2 -DSQLITE_OMIT_LOAD_EXTENSION -DSQLITE_THREADSAFE=0 -c $< -o $@
 
 # Main program
 MAIN_EXECUTABLE = $(BIN_DIR)/elevator_guardrails
@@ -112,7 +135,7 @@ test-cunit: $(CUNIT_EXECUTABLE)
 	./$(CUNIT_EXECUTABLE)
 
 # Run simple tests by default
-test: test-simple test-simulation
+test: test-simple test-simulation test-telemetry
 
 # Run main program
 run: $(MAIN_EXECUTABLE)
@@ -129,9 +152,10 @@ ifeq ($(OS),Windows_NT)
 	@if exist $(CUNIT_EXECUTABLE) del $(CUNIT_EXECUTABLE)
 	@if exist elevator_web.exe del elevator_web.exe
 	@if exist test_simulation.exe del test_simulation.exe
+	@if exist test_telemetry.exe del test_telemetry.exe
 else
 	rm -rf $(BUILD_DIR)
-	rm -f $(MAIN_EXECUTABLE) $(SIMPLE_EXECUTABLE) $(CUNIT_EXECUTABLE) $(WEB_EXECUTABLE) $(SIM_TEST_EXECUTABLE)
+	rm -f $(MAIN_EXECUTABLE) $(SIMPLE_EXECUTABLE) $(CUNIT_EXECUTABLE) $(WEB_EXECUTABLE) $(SIM_TEST_EXECUTABLE) $(TELEMETRY_TEST_EXECUTABLE)
 endif
 	@echo "✓ Clean complete"
 

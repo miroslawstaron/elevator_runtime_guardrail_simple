@@ -6,19 +6,16 @@ Baseline captured on 2026-10-20 before implementation changes. Source: `src/main
 
 ```mermaid
 flowchart LR
-    User[Operator] -->|Keyboard 0–9, S, R, W, H, Q| Main
-    subgraph Process[Single C process]
-        Main[main.c: terminal UI and 100 ms loop]
-        Core[elevator.c: table-driven state machine]
-        Guards[guardrails.c: check and enforcement]
-        State[(Elevator struct in memory)]
-        Main --> Core
-        Main --> Guards
-        Core <--> State
-        Guards <--> State
+    subgraph Entry[Terminal application]
+        Main["src/main.c<br/>Terminal input, rendering and main loop"]
     end
-    Main -->|ASCII cabin, status and warnings| Terminal[Terminal screen]
-    Terminal --> User
+    subgraph Modules[Core C modules]
+        Elevator["src/elevator.c<br/>include/elevator.h<br/>Elevator types and state-machine API"]
+        Guard["src/guardrails.c<br/>include/guardrails.h<br/>GuardrailStatus and safety API"]
+    end
+    Main -->|uses elevator.h API| Elevator
+    Main -->|uses guardrails.h API| Guard
+    Guard -->|uses Elevator type and helpers| Elevator
 ```
 
 ## Sequence: request and travel

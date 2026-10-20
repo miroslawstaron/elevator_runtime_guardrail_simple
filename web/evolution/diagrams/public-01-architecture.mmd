@@ -1,0 +1,32 @@
+flowchart LR
+    subgraph Web[Browser modules]
+        Page["web/index.html<br/>Dashboard structure and controls"]
+        App["web/app.js<br/>Shared state, commands and rendering"]
+        Styles["web/app.css<br/>Layout and component styles"]
+        Page -->|loads| App
+        Page -->|loads| Styles
+        Logo["web/assets/agenticai-logo.png<br/>Supplied logo"]
+        Page -->|references| Logo
+    end
+    subgraph Backend[C backend modules]
+        HTTP["src/web_server.c<br/>HTTP routes, validation and clock<br/>Includes simulation.h"]
+        Sim["src/simulation.c<br/>include/simulation.h<br/>Passenger dispatch, capacity and state JSON"]
+        Elevator["src/elevator.c<br/>include/elevator.h<br/>Elevator types and state-machine API"]
+        Guard["src/guardrails.c<br/>include/guardrails.h<br/>GuardrailStatus and safety API"]
+        HTTP -->|uses simulation.h API| Sim
+        Sim -->|uses elevator.h API| Elevator
+        Sim -->|uses guardrails.h API| Guard
+        Guard -->|uses Elevator type and helpers| Elevator
+    end
+    App -->|HTTP state and command API| HTTP
+    subgraph Deployment[Deployment modules]
+        Launch["run-public.ps1<br/>Build and launch public session"]
+        Stop["stop-public.ps1<br/>Stop owned session processes"]
+        Tunnel["cloudflared.exe<br/>External tunnel executable"]
+        Session["build/public/session.json<br/>Process identities and public URL"]
+        Launch -->|launches and records| Tunnel
+        Launch -->|writes| Session
+        Stop -->|reads ownership data| Session
+    end
+    Launch -->|builds and launches| HTTP
+    Tunnel -->|HTTP transport boundary| HTTP
