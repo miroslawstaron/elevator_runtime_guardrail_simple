@@ -1,0 +1,23 @@
+sequenceDiagram
+    actor Alex
+    actor Sam
+    actor Jamie
+    participant Web as Browser
+    participant Sim as C dispatcher
+    participant Core as C state machine
+    Alex->>Web: Floor 1 to 9
+    Web->>Sim: Add passenger via HTTP
+    Sim->>Core: Open at 1, board Alex, travel upward
+    Sam->>Web: Floor 3 to 7, while cabin is moving
+    Web->>Sim: Add passenger via HTTP
+    Jamie->>Web: Floor 6 to 0
+    Web->>Sim: Add passenger via HTTP
+    Sim->>Core: Reconsider next stop at each landing
+    Sim->>Core: Stop at 3, board Sam going up
+    Note over Sim: Jamie waits for the downward direction.
+    Sim->>Core: Stop at 7, Sam exits
+    Sim->>Core: Stop at 9, Alex exits
+    Sim->>Sim: Reverse when no demand remains ahead
+    Sim->>Core: Return to 6, board Jamie going down
+    Sim->>Core: Stop at 0, Jamie exits
+    Note over Sim,Core: Requests share stops, full cabins leave waiting people<br/>for a subsequent trip. Request handling remains in C.

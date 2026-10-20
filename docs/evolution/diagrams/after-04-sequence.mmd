@@ -1,0 +1,25 @@
+sequenceDiagram
+    actor Operator
+    participant Web as Browser
+    participant HTTP as C HTTP server
+    participant Sim as C simulation adapter
+    participant Core as Existing C state machine
+    participant Guards as Existing C guardrails
+    Operator->>Web: Emergency stop
+    Web->>HTTP: POST /api/control action=stop
+    HTTP->>Sim: Set stop_requested
+    HTTP-->>Web: stopPending=true
+    loop Until current floor interval is complete, at most five motion ticks
+        HTTP->>Sim: Monotonic clock tick
+        Sim->>Core: Continue to next landing with doors closed
+    end
+    Sim->>Core: elevator_press_stop at motion_ticks=0
+    Sim->>Guards: Check and enforce
+    Note over Sim: Preserve passengers and requests, hold at landing.<br/>Report elapsed stop time and existing 20-second prompt.
+    Web->>HTTP: GET /api/state
+    HTTP-->>Web: stopped=true, position at integer landing
+    Operator->>Web: Resume elevator
+    Web->>HTTP: POST /api/control action=resume
+    HTTP->>Sim: Cancel pending stop or release active stop
+    Sim->>Core: elevator_release_stop, close doors first if needed
+    Sim->>Sim: Continue queued passenger journeys

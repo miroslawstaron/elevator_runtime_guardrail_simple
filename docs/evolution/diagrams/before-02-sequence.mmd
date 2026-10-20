@@ -1,0 +1,17 @@
+sequenceDiagram
+    actor Operator
+    participant UI as main.c
+    participant Guard as guardrails.c
+    participant Core as elevator.c
+    participant State as Elevator
+    Operator->>UI: Press floor key
+    UI->>Core: elevator_press_button(floor)
+    Core->>State: Set button and target if idle
+    loop Every approximately 100 ms
+        UI->>Guard: guardrail_check / guardrail_enforce
+        Guard->>State: Inspect and correct violations
+        UI->>Core: elevator_tick
+        Core->>State: Transition state, move every five ticks
+        UI->>Operator: Redraw cabin, buttons and warnings
+    end
+    Note over Core,State: Highest pending floor served first upward,<br/>lowest pending floor served first downward.<br/>Door-open state currently lasts one tick.

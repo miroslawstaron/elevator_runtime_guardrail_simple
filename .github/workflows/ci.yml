@@ -35,6 +35,9 @@ jobs:
     - name: Run tests
       run: make test
 
+    - name: Test C HTTP server
+      run: node tests/test_web.mjs ./elevator_web${{ runner.os == 'Windows' && '.exe' || '' }}
+
     - name: Upload artifacts
       uses: actions/upload-artifact@v4.4.0
       if: always()
@@ -45,3 +48,6 @@ jobs:
           elevator_guardrails.exe
           test_simple
           test_simple.exe
+          elevator_web
+          elevator_web.exe
+          web/

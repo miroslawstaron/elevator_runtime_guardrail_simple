@@ -1,0 +1,25 @@
+sequenceDiagram
+    actor Visitor
+    participant Browser as Remote browser
+    participant Edge as Public HTTPS endpoint
+    participant Tunnel as cloudflared on this computer
+    participant Server as C server on port 8099
+    participant Sim as C simulation
+    Visitor->>Browser: Open generated public URL
+    Browser->>Edge: GET / over HTTPS
+    Edge->>Tunnel: Route through encrypted tunnel
+    Tunnel->>Server: HTTP/1.1 request with public Host
+    Server->>Server: Match exact configured public hostname
+    Server-->>Browser: HTML, JavaScript, CSS and supplied logo
+    Visitor->>Browser: Add passenger and destination
+    Browser->>Edge: POST /api/people with public HTTPS Origin
+    Edge->>Tunnel: Forward request
+    Tunnel->>Server: Preserve Host and Origin headers
+    Server->>Server: Validate exact allowed origin and passenger input
+    Server->>Sim: Add passenger
+    Sim-->>Browser: Authoritative state via tunnel and HTTPS
+    loop Independent C clock and browser polling
+        Server->>Sim: Advance at 10 Hz
+        Browser->>Server: Poll state through public HTTPS tunnel
+        Server-->>Browser: Shared elevator and passenger state
+    end

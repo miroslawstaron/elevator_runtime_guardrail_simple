@@ -1,0 +1,17 @@
+flowchart TB
+    Remote[Remote browser] -->|HTTPS on port 443| Edge[Cloudflare public HTTPS endpoint]
+    subgraph Computer[This Windows computer]
+        Tunnel[cloudflared<br/>Outbound encrypted tunnel]
+        Server[C HTTP server<br/>127.0.0.1 port 8099]
+        Sim[C passenger dispatcher<br/>Independent 100 ms clock]
+        Core[Existing C elevator state machine]
+        Guards[Existing C runtime guardrails]
+        Assets[Local HTML, CSS, JavaScript and logo]
+        Tunnel -->|Forward HTTP and preserve Host and Origin| Server
+        Server --> Sim
+        Server --> Assets
+        Sim --> Core
+        Sim --> Guards
+    end
+    Tunnel <-->|Encrypted outbound connection| Edge
+    Local[Local browser] -->|http://localhost:8099| Server

@@ -19,6 +19,30 @@ BIN_DIR = .
 SRC_FILES = $(SRC_DIR)/elevator.c $(SRC_DIR)/guardrails.c
 SRC_OBJECTS = $(BUILD_DIR)/elevator.o $(BUILD_DIR)/guardrails.o
 
+.DEFAULT_GOAL := all
+WEB_EXECUTABLE = $(BIN_DIR)/elevator_web
+SIM_TEST_EXECUTABLE = $(BIN_DIR)/test_simulation
+ifeq ($(OS),Windows_NT)
+  WEB_LIBS = -lws2_32
+else
+  WEB_LIBS =
+endif
+
+$(WEB_EXECUTABLE): $(SRC_OBJECTS) $(BUILD_DIR)/simulation.o $(BUILD_DIR)/web_server.o
+	$(CC) $(CFLAGS) -o $@ $^ $(WEB_LIBS)
+
+$(SIM_TEST_EXECUTABLE): $(SRC_OBJECTS) $(BUILD_DIR)/simulation.o $(BUILD_DIR)/test_simulation.o
+	$(CC) $(CFLAGS) -o $@ $^
+
+.PHONY: web run-web test-simulation
+web: $(WEB_EXECUTABLE)
+run-web: $(WEB_EXECUTABLE)
+	./$(WEB_EXECUTABLE)
+test-simulation: $(SIM_TEST_EXECUTABLE)
+	./$(SIM_TEST_EXECUTABLE)
+
+$(BUILD_DIR)/simulation.o $(BUILD_DIR)/web_server.o $(BUILD_DIR)/test_simulation.o: include/simulation.h include/elevator.h include/guardrails.h
+
 # Main program
 MAIN_EXECUTABLE = $(BIN_DIR)/elevator_guardrails
 MAIN_OBJECTS = $(SRC_OBJECTS) $(BUILD_DIR)/main.o
@@ -34,7 +58,7 @@ CUNIT_LDFLAGS = -lm -lcunit
 
 .PHONY: all test test-simple test-cunit run clean check-guardrails help
 
-all: $(MAIN_EXECUTABLE) $(SIMPLE_EXECUTABLE)
+all: $(MAIN_EXECUTABLE) $(SIMPLE_EXECUTABLE) $(WEB_EXECUTABLE)
 
 # Create build directory
 $(BUILD_DIR):
@@ -88,7 +112,7 @@ test-cunit: $(CUNIT_EXECUTABLE)
 	./$(CUNIT_EXECUTABLE)
 
 # Run simple tests by default
-test: test-simple
+test: test-simple test-simulation
 
 # Run main program
 run: $(MAIN_EXECUTABLE)
@@ -103,9 +127,11 @@ ifeq ($(OS),Windows_NT)
 	@if exist $(MAIN_EXECUTABLE) del $(MAIN_EXECUTABLE)
 	@if exist $(SIMPLE_EXECUTABLE) del $(SIMPLE_EXECUTABLE)
 	@if exist $(CUNIT_EXECUTABLE) del $(CUNIT_EXECUTABLE)
+	@if exist elevator_web.exe del elevator_web.exe
+	@if exist test_simulation.exe del test_simulation.exe
 else
 	rm -rf $(BUILD_DIR)
-	rm -f $(MAIN_EXECUTABLE) $(SIMPLE_EXECUTABLE) $(CUNIT_EXECUTABLE)
+	rm -f $(MAIN_EXECUTABLE) $(SIMPLE_EXECUTABLE) $(CUNIT_EXECUTABLE) $(WEB_EXECUTABLE) $(SIM_TEST_EXECUTABLE)
 endif
 	@echo "✓ Clean complete"
 

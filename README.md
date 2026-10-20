@@ -2,6 +2,19 @@
 
 A comprehensive C implementation of an elevator control system featuring a state machine architecture with guardrails for safe operation.
 
+## New: Elevator Lab web interface
+
+Operate the elevator from a responsive web dashboard using the supplied agenticAI logo. Add named passengers and groups on different floors, watch shared trips and intermediate stops, and use cabin, door, stop, and resume controls. **The entire backend remains C**, including the HTTP server, clock, passenger dispatch, original state machine, and original guardrails. The frontend is dependency-free HTML/CSS/JavaScript.
+
+```powershell
+.\run-web.ps1 -Port 8090 -OpenBrowser
+.\build.ps1 -Test -Terminal
+```
+
+To share the C simulator over the internet, run `.\run-public.ps1`. It checks local port **8099**, starts the C backend and an HTTPS tunnel in the background, and prints the public URL. Keep this computer awake and online. Stop with `.\stop-public.ps1`; restarting assigns a new public URL. See [public access setup](docs/WEB_INTERFACE.md#share-over-the-internet) and [deployment diagrams](docs/evolution/03-public-access.md).
+
+On Linux/macOS: `make web`, then `./elevator_web --port 8090`. Open <http://localhost:8090>. Read [web setup, API, and testing](docs/WEB_INTERFACE.md), [before diagrams](docs/evolution/01-before.md), [after diagrams](docs/evolution/02-after.md), or the [rendered diagram gallery](docs/evolution/diagrams.html).
+
 ## Overview
 
 This project demonstrates solid software engineering principles by separating concerns into independent modules:
@@ -30,13 +43,14 @@ make clean        # Clean build artifacts
 
 ### On Windows (PowerShell):
 ```powershell
-.\build.ps1       # Build the simulator
-.\elevator_sim.exe # Run
+.\build.ps1 -Terminal                   # Build web and original terminal simulators
+.\build\elevator_guardrails.exe         # Run original terminal UI
+.\run-web.ps1 -Port 8090                # Run web interface
 ```
 
 ### Manual compilation:
 ```bash
-gcc -Wall -Wextra -std=c99 -O2 -o elevator_sim main.c elevator.c guardrails.c
+gcc -Wall -Wextra -std=c99 -O2 -Iinclude -o elevator_sim src/main.c src/elevator.c src/guardrails.c
 ```
 
 ## Module Descriptions

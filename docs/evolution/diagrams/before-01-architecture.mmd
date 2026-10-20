@@ -1,0 +1,14 @@
+flowchart LR
+    User[Operator] -->|Keyboard 0–9, S, R, W, H, Q| Main
+    subgraph Process[Single C process]
+        Main[main.c: terminal UI and 100 ms loop]
+        Core[elevator.c: table-driven state machine]
+        Guards[guardrails.c: check and enforcement]
+        State[(Elevator struct in memory)]
+        Main --> Core
+        Main --> Guards
+        Core <--> State
+        Guards <--> State
+    end
+    Main -->|ASCII cabin, status and warnings| Terminal[Terminal screen]
+    Terminal --> User

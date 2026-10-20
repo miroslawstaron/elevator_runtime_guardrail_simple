@@ -3,7 +3,11 @@ project(elevator_guardrails C)
 
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra")
+if(MSVC)
+    add_compile_options(/W4)
+else()
+    add_compile_options(-Wall -Wextra)
+endif()
 
 # Add include directory
 include_directories(${CMAKE_SOURCE_DIR}/include)
@@ -28,6 +32,19 @@ add_executable(test_simple
     ${CORE_SOURCES}
     tests/test_simple.c
 )
+
+# Add CUnit test executable (optional)
+# Browser frontend and passenger dispatcher; backend stays entirely in C.
+add_executable(elevator_web ${CORE_SOURCES} src/simulation.c src/web_server.c)
+if(WIN32)
+    target_link_libraries(elevator_web PRIVATE ws2_32)
+endif()
+add_executable(test_simulation ${CORE_SOURCES} src/simulation.c tests/test_simulation.c)
+set_target_properties(elevator_web test_simulation PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+file(COPY web DESTINATION "${CMAKE_BINARY_DIR}")
+enable_testing()
+add_test(NAME passenger_simulation_tests COMMAND test_simulation)
 
 # Add CUnit test executable (optional)
 if(CUnit_FOUND)

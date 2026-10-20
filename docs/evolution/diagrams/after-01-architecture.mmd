@@ -1,0 +1,23 @@
+flowchart TB
+    Operator[Operator] --> Browser
+    subgraph Browser[Web browser]
+        UI[index.html and app.css<br/>Logo, building, controls, journeys]
+        JS[app.js<br/>Commands, polling and rendering]
+        UI <--> JS
+    end
+    subgraph Backend[Single C process on loopback]
+        HTTP[web_server.c<br/>Nonblocking HTTP and monotonic 100 ms clock]
+        Sim[simulation.c<br/>Passenger lifecycle, capacity and directional dispatch]
+        Core[elevator.c<br/>Existing state machine unchanged]
+        Guards[guardrails.c<br/>Existing enforcement unchanged]
+        Memory[(Shared in-memory simulation<br/>Passengers, requests, events, elevator)]
+        HTTP -->|Tick independently of browsers| Sim
+        Sim --> Core
+        Sim --> Guards
+        Sim <--> Memory
+        Core <--> Memory
+        Guards <--> Memory
+    end
+    JS -->|GET /api/state and form-encoded POST commands| HTTP
+    HTTP -->|Authoritative JSON snapshots and local assets| JS
+    Assets[web/assets/agenticai-logo.png<br/>Supplied original logo] --> HTTP
