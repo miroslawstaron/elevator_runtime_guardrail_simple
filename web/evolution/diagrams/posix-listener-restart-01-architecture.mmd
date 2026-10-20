@@ -1,0 +1,23 @@
+flowchart LR
+    subgraph Server[C HTTP and telemetry modules]
+        HTTP["src/web_server.c<br/>POSIX listener options, bind/listen and diagnostics"]
+        Socket["sys/socket.h and errno.h<br/>POSIX platform socket API"]
+        Windows["winsock2.h<br/>Existing Windows socket API"]
+        Telemetry["src/telemetry.c<br/>include/telemetry.h<br/>Persistent run and query API"]
+        Simulation["src/simulation.c / include/simulation.h<br/>src/elevator.c / include/elevator.h<br/>src/guardrails.c / include/guardrails.h"]
+        HTTP -->|POSIX includes| Socket
+        HTTP -->|Windows includes| Windows
+        HTTP -->|uses telemetry.h API| Telemetry
+        HTTP -->|uses simulation.h API| Simulation
+    end
+    subgraph Verification[Integration-test modules]
+        CI[".github/workflows/ci.yml<br/>Ubuntu and Windows build matrix"]
+        Test["tests/test_telemetry_web.mjs<br/>Process ownership, bind exclusion and restart checks"]
+        Child["node:child_process<br/>spawn and spawnSync"]
+        CI -->|runs| Test
+        Test -->|imports| Child
+    end
+    Child -->|launches isolated executable| HTTP
+    Test -->|HTTP state, feedback and history API| HTTP
+    DB[("Temporary experiment.sqlite3<br/>Retained across test restarts")]
+    Telemetry -->|database API via embedded SQLite| DB

@@ -68,6 +68,17 @@ static volatile sig_atomic_t running = 1;
  */
 static void stop_server(int sig) { (void)sig; running = 0; }
 /**
+ * Report listener setup failures with the endpoint and operating-system error.
+ * Read the socket error before cleanup can replace it; this function does not close the socket.
+ */
+static void listener_error(const char *operation) {
+#ifdef _WIN32
+    fprintf(stderr, "%s %s:%d (socket error %d).\n", operation, listen_address, port, WSAGetLastError());
+#else
+    fprintf(stderr, "%s %s:%d: %s.\n", operation, listen_address, port, strerror(errno));
+#endif
+}
+/**
  * Return monotonic milliseconds for simulation scheduling and client deadlines
  * Wall-clock changes must not affect the 100 ms runtime tick
  */
@@ -606,13 +617,24 @@ int main(int argc, char **argv) {
     // STARTUP 2: Bind the requested IPv4 endpoint before opening the persistent recorder
     Socket server = socket(AF_INET, SOCK_STREAM, 0);
     if (server == BAD) { fprintf(stderr, "Cannot create socket.\n"); return 1; }
+#ifndef _WIN32
+    // POSIX RESTART: Reuse addresses left in TIME_WAIT by this server's closed connections.
+    // Do not enable SO_REUSEPORT: an existing listener must still own the endpoint exclusively.
+    int reuse_address = 1;
+    if (setsockopt(server, SOL_SOCKET, SO_REUSEADDR, &reuse_address, sizeof(reuse_address))) {
+        listener_error("Cannot configure SO_REUSEADDR for"); CLOSE(server); return 1;
+    }
+#endif
     struct sockaddr_in address; memset(&address, 0, sizeof(address));
     address.sin_family = AF_INET; address.sin_port = htons((unsigned short)port);
     if (inet_pton(AF_INET, listen_address, &address.sin_addr) != 1) {
         fprintf(stderr, "Listen address must be an IPv4 address.\n"); CLOSE(server); return 1;
     }
-    if (bind(server, (struct sockaddr *)&address, sizeof(address)) || listen(server, CLIENTS)) {
-        fprintf(stderr, "Cannot bind %s:%d. Another server may already be running.\n", listen_address, port); CLOSE(server); return 1;
+    if (bind(server, (struct sockaddr *)&address, sizeof(address))) {
+        listener_error("Cannot bind"); CLOSE(server); return 1;
+    }
+    if (listen(server, CLIENTS)) {
+        listener_error("Cannot listen on"); CLOSE(server); return 1;
     }
     nonblocking(server); simulation_init(&simulation);
     if (!strcmp(database_path, "data/elevator.sqlite3")) {

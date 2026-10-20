@@ -1,0 +1,25 @@
+sequenceDiagram
+    participant Test as tests/test_telemetry_web.mjs
+    participant Old as Earlier C server process
+    participant Kernel as POSIX socket API
+    participant New as Replacement C server process
+    participant Store as src/telemetry.c
+    Test->>Old: HTTP traffic and persistent feedback
+    Old->>Kernel: Close completed HTTP connections
+    Note over Kernel: Closed TCP connections may remain in TIME_WAIT.
+    Test->>Old: SIGTERM
+    Old->>Kernel: Close clients and listener
+    Old->>Store: Capture and archive current run
+    Old-->>Test: Child process close event
+    Test->>New: Spawn on the same port and database
+    New->>Kernel: socket and setsockopt SO_REUSEADDR
+    New->>Kernel: bind and listen
+    alt Endpoint available with reusable retired connections
+        Kernel-->>New: Listener ready
+        New->>Store: Open existing database and start a new run
+        New-->>Test: Readiness output
+        Test->>New: Verify archived samples and feedback
+    else A different listener still owns the endpoint
+        Kernel-->>New: EADDRINUSE
+        New-->>Test: Report OS error and exit without opening the database
+    end

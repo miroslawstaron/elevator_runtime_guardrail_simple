@@ -421,6 +421,35 @@
           "mermaid": "/evolution/diagrams/module-architecture-04-sequence.mmd"
         }
       ]
+    },
+    {
+      "id": "13",
+      "slug": "posix-listener-restart",
+      "title": "Restart-safe POSIX HTTP listener",
+      "date": "2026-10-20",
+      "summary": "The C server enables POSIX address reuse before binding, reports OS socket errors and retains active-listener exclusion. Telemetry HTTP tests verify three immediate restarts on the same port and database.",
+      "sourceHash": "c0c425c906c263a2f9a34c71de1c0805bca86fe9ff85a3211d2338bb71d83ecd",
+      "notes": "/evolution/stages/posix-listener-restart.md",
+      "diagrams": [
+        {
+          "name": "posix-listener-restart-01-architecture",
+          "title": "Architecture: listener implementation and regression-test modules",
+          "type": "architecture",
+          "sourceHash": "e5d7d24bc42df3be415a41e16ff5b4f4b439cf9217b0925d91de9ab912d837f8",
+          "svgHash": "0f6e55667160ab79fba34027cedb86c958b9dc37fae82d5b3476ca91561581f7",
+          "svg": "/evolution/diagrams/posix-listener-restart-01-architecture.svg",
+          "mermaid": "/evolution/diagrams/posix-listener-restart-01-architecture.mmd"
+        },
+        {
+          "name": "posix-listener-restart-02-sequence",
+          "title": "Sequence: close and immediately restart the same POSIX endpoint",
+          "type": "sequence",
+          "sourceHash": "59359e227a2458aaa3d1643feff89aabdf78a34be58296c0527542ddf5735dff",
+          "svgHash": "4b6ba85074e182425e87270f24eb8946ae650c549e35a36ae7e4f55bfe603370",
+          "svg": "/evolution/diagrams/posix-listener-restart-02-sequence.svg",
+          "mermaid": "/evolution/diagrams/posix-listener-restart-02-sequence.mmd"
+        }
+      ]
     }
   ]
 }

@@ -7,7 +7,7 @@
 ******************************************/
 
 import assert from 'node:assert/strict';
-import {spawn} from 'node:child_process';
+import {spawn, spawnSync} from 'node:child_process';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
@@ -22,19 +22,22 @@ const base = `http://127.0.0.1:${port}`;
  * Wait briefly while the independent C service advances the real simulation
  */
 const pause = ms => new Promise(resolve => setTimeout(resolve,ms));
-let server;
+let server, serverClosed;
 /**
  * Start an isolated C service using the same on-disk test database
  * Wait for startup output and fail when initialization does not complete
  */
 async function start() {
-  let log = '';
+  let log = '', spawnError;
   server = spawn(binary,['--port',String(port),'--database',database,'--web-root',path.join(root,'web')],{cwd:root,windowsHide:true});
+  // Capture close immediately: signalled processes have signalCode rather than a numeric exitCode.
+  serverClosed = new Promise(resolve => server.once('close',resolve));
   server.stdout.on('data',data => { log += data; });
   server.stderr.on('data',data => { log += data; });
-  server.on('error',error => { log += error.message; });
+  server.on('error',error => { spawnError = error; });
   for (let i = 0; i < 100 && !log.includes('Open http://'); i++) {
-    if (server.exitCode !== null) throw new Error(log);
+    if (spawnError) throw spawnError;
+    if (server.exitCode !== null || server.signalCode !== null) throw new Error(log);
     await pause(30);
   }
   assert.match(log,/Open http:\/\//);
@@ -43,8 +46,10 @@ async function start() {
  * Terminate the test server and wait for process exit before reopening its database
  */
 async function stop() {
-  if (!server || server.exitCode !== null) return;
-  const closed = new Promise(resolve => server.once('exit',resolve)); server.kill(); await closed;
+  if (!server) return;
+  if (server.exitCode === null && server.signalCode === null) server.kill();
+  await serverClosed;
+  server = null;
 }
 /**
  * Read one JSON endpoint and assert its expected HTTP status
@@ -65,6 +70,11 @@ async function post(endpoint,data,expected = 200,origin = base) {
 // SCENARIO 1: Record an actual trip and feedback in an isolated persistent experiment
 try {
   await start();
+  // ENDPOINT OWNERSHIP: Restart reuse must never permit two live listeners on the same address.
+  const conflict = spawnSync(binary,['--port',String(port),'--database',':memory:'],{cwd:root,windowsHide:true,encoding:'utf8',timeout:5000});
+  assert.ifError(conflict.error);
+  assert.notEqual(conflict.status,0,'another server must not take over an active endpoint');
+  assert.match(conflict.stderr,/Cannot bind/);
   let state = await get('/api/state');
   assert.ok(state.runId > 0); assert.equal(state.telemetry.healthy,true);
   const first = state.runId;
@@ -128,14 +138,19 @@ try {
   await post('/api/feedback',{runId:run,passengerId:1,text:'Late feedback on old journey'},200);
   assert.equal((await get(`/api/telemetry/feedback?runId=${nextRun}`)).rows.length,1);
   const bytes = await fs.readFile(database); assert.equal(bytes.subarray(0,15).toString(),'SQLite format 3');
-  // SCENARIO 6: Reopen the same file and verify feedback and archived experiments persist
-  await stop(); await start();
-  state = await get('/api/state'); assert.ok(state.runId > nextRun);
-  assert.equal((await get(`/api/telemetry/feedback?runId=${run}`)).rows.length,2);
-  assert.equal((await get(`/api/telemetry/samples?runId=${run}&limit=200`)).rows.length,summary.sampleCount);
+  // SCENARIO 6: Repeatedly reuse the exact endpoint and database after real HTTP traffic.
+  // Compare immutable archived counts, rather than a summary read while that run was still active.
+  const archived = (await get(`/api/telemetry/summary?runId=${run}`)).rows[0];
+  for (let restart = 0; restart < 3; restart++) {
+    const previousRun = (await get('/api/state')).runId;
+    await stop(); await start();
+    state = await get('/api/state'); assert.ok(state.runId > previousRun);
+    assert.equal((await get(`/api/telemetry/feedback?runId=${run}`)).rows.length,2);
+    assert.equal((await get(`/api/telemetry/samples?runId=${run}&limit=200`)).rows.length,archived.sampleCount);
+  }
   const runs = await get('/api/telemetry/runs?limit=200');
   assert.ok(runs.rows.some(r => r.name === 'Morning baseline <& "A"'));
-  console.log('PASS: persistent SQLite API; 10 Hz samples/events/journeys; named experiments; feedback/ratings/UTF-8; input validation and origin checks; tick filtering/pagination; CSV escaping; reset/restart history and passenger identity isolation.');
+  console.log('PASS: persistent SQLite API; 10 Hz samples/events/journeys; named experiments; feedback/ratings/UTF-8; input validation and origin checks; tick filtering/pagination; CSV escaping; three immediate same-port restarts, active-listener exclusion, history and passenger identity isolation.');
 } finally {
   await stop();
   // CLEANUP: Verify the generated temporary directory boundary before recursive test removal

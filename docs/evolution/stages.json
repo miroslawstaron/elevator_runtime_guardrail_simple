@@ -101,6 +101,15 @@
       "title": "Source modules and dependencies",
       "date": "2026-10-20",
       "summary": "Architecture diagrams show stage-specific C files, public headers, web components and tooling dependencies. Current C, web and deployment modules have separate views; sequences retain runtime behavior."
+    },
+    {
+      "id": "13",
+      "slug": "posix-listener-restart",
+      "diagramTheme": "metriczone",
+      "file": "13-posix-listener-restart.md",
+      "title": "Restart-safe POSIX HTTP listener",
+      "date": "2026-10-20",
+      "summary": "The C server enables POSIX address reuse before binding, reports OS socket errors and retains active-listener exclusion. Telemetry HTTP tests verify three immediate restarts on the same port and database."
     }
   ]
 }
