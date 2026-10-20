@@ -9,6 +9,7 @@
 import assert from 'node:assert/strict';
 import {spawn} from 'node:child_process';
 import fs from 'node:fs/promises';
+import net from 'node:net';
 import os from 'node:os';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
@@ -16,19 +17,35 @@ const root = fileURLToPath(new URL('../',import.meta.url));
 const directory = await fs.mkdtemp(path.join(os.tmpdir(),'elevator-telemetry-'));
 const database = path.join(directory,'experiment.sqlite3');
 const binary = path.resolve(process.argv[2] || path.join(root,'build',process.platform === 'win32' ? 'elevator_web.exe' : 'elevator_web'));
-const port = 18093;
-const base = `http://127.0.0.1:${port}`;
+let port;
+let base;
 /**
  * Wait briefly while the independent C service advances the real simulation
  */
 const pause = ms => new Promise(resolve => setTimeout(resolve,ms));
 let server;
 /**
+ * Ask the operating system for an unused loopback port for one server session
+ * Release the reservation before starting the separately spawned C server
+ */
+async function availablePort() {
+  const reservation = net.createServer();
+  await new Promise((resolve,reject) => {
+    reservation.once('error',reject);
+    reservation.listen(0,'127.0.0.1',resolve);
+  });
+  const {port} = reservation.address();
+  await new Promise((resolve,reject) => reservation.close(error => error ? reject(error) : resolve()));
+  return port;
+}
+/**
  * Start an isolated C service using the same on-disk test database
  * Wait for startup output and fail when initialization does not complete
  */
 async function start() {
   let log = '';
+  port = await availablePort();
+  base = `http://127.0.0.1:${port}`;
   server = spawn(binary,['--port',String(port),'--database',database,'--web-root',path.join(root,'web')],{cwd:root,windowsHide:true});
   server.stdout.on('data',data => { log += data; });
   server.stderr.on('data',data => { log += data; });
